@@ -26,7 +26,7 @@ pub struct ResMetadata {
     /// 资源 ID
     pub resource_id: String,
     /// 资源的明文的哈希值（[u8; 32] 的 Base64 编码）
-    pub hash: Hash,
+    pub hash: String,
     /// 资源的明文的内容部分的大小
     pub size: u64,
     /// 扩展字段（包含可公开的属性）
@@ -40,8 +40,8 @@ pub struct ResMetadataStored {
     pub resource_type: ResourceType,
     /// 资源 ID
     pub resource_id: String,
-    /// 资源的明文的哈希值
-    pub hash: Hash,
+    /// 资源的明文的哈希值（[u8; 32] 的 Base64 编码）
+    pub hash: String,
     /// 资源的明文的大小
     pub size: u64,
     /// 扩展字段
@@ -51,7 +51,7 @@ pub struct ResMetadataStored {
     /// 时间戳
     pub timestamp: u64,
     /// 上传的密文的哈希值，由链码计算。明文时应与 `hash` 有相同值。
-    pub hash_stored: Hash,
+    pub hash_stored: String,
     /// 上传的密文的大小，由链码确定。时文时应与 `size` 有相同值。
     pub size_stored: u64,
 }

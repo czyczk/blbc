@@ -43,8 +43,8 @@ mod blbc {
             }
 
             // 将数据本体从 Base64 解码
-            let data_bytes = match base64::decode(plain_data.data) {
-                Ok(b) => b,
+            let data_bytes: Vec<u8> = match base64::decode(plain_data.data) {
+                Ok(b) => Vec::from(b.bytes()),
                 Err(err) => return Err(format!("无法解析数据本体: {}", err)),
             };
 
@@ -58,6 +58,30 @@ mod blbc {
             }
 
             let hash_stored = self.env().hash_bytes::<Sha2x256>(&data_bytes);
+            let hash_stored_base64 = base64::encode(hash_stored);
+            if hash_stored_base64 != plain_data.metadata.hash {
+                return Err("哈希不匹配".into());
+            }
+
+            // 获取创建者与时间戳
+            let creator = self.env().caller();
+            let timestamp = self.env().block_timestamp();
+
+            // 准备存储元数据
+            let metadata_stored = ResMetadataStored {
+                resource_type: plain_data.metadata.resource_type,
+                resource_id: plain_data.metadata.resource_id,
+                hash: plain_data.metadata.hash,
+                size: plain_data.metadata.size,
+                extensions: plain_data.metadata.extensions,
+                creator,
+                timestamp,
+                hash_stored: hash_stored_base64,
+                size_stored,
+            };
+
+            // 写入数据库
+            self.res_map.insert(resource_id.clone(), data_bytes);
 
             return Ok(());
         }
