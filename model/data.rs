@@ -5,9 +5,9 @@ use ink_env::{AccountId, Hash};
 use ink_prelude::string::String;
 use ink_storage::traits::{PackedLayout, SpreadLayout};
 use scale::{Decode, Encode};
-use scale_info::TypeInfo;
 
-#[derive(Debug, Decode, Encode, TypeInfo, PackedLayout, SpreadLayout)]
+#[derive(Debug, Decode, Encode, PackedLayout, SpreadLayout)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 /// ResourceType 用于标志一个资源的加密类别
 pub enum ResourceType {
     /// Plain 表示资源加密类别为“明文”。
@@ -18,7 +18,8 @@ pub enum ResourceType {
     Offchain,
 }
 
-#[derive(Debug, Decode, Encode, TypeInfo, PackedLayout, SpreadLayout)]
+#[derive(Debug, Decode, Encode, PackedLayout, SpreadLayout)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 /// ResMetadata 包含要传入链码的资源的元数据
 pub struct ResMetadata {
     /// 资源加密类别
@@ -33,7 +34,8 @@ pub struct ResMetadata {
     pub extensions: BTreeMap<String, String>,
 }
 
-#[derive(Debug, Decode, Encode, TypeInfo, PackedLayout, SpreadLayout)]
+#[derive(Debug, Decode, Encode, PackedLayout, SpreadLayout)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 /// ResMetadataStored 包含从链码中读出的资源的元数据
 pub struct ResMetadataStored {
     /// 资源加密类别
@@ -50,13 +52,16 @@ pub struct ResMetadataStored {
     pub creator: AccountId,
     /// 时间戳
     pub timestamp: u64,
+    /// 所包含的区块
+    pub block_number: ink_env::Environment::BlockNumber,
     /// 上传的密文的哈希值，由链码计算。明文时应与 `hash` 有相同值。
     pub hash_stored: String,
     /// 上传的密文的大小，由链码确定。时文时应与 `size` 有相同值。
     pub size_stored: u64,
 }
 
-#[derive(Decode, Encode, TypeInfo)]
+#[derive(Decode, Encode)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 /// PlainData 用于表示要传入链码的明文资源
 pub struct PlainData {
     /// 资源的元数据
