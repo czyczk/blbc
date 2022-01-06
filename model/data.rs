@@ -1,12 +1,12 @@
 // 使用 `alloc` 是因为似乎不能在嵌套类中使用 `HashMap`（`Encode` trait 不满足）。作为权变，使用 `alloc::collections::BTreeMap`。
 extern crate alloc;
 use alloc::collections::BTreeMap;
-use ink_env::{AccountId, Hash};
+use ink_env::AccountId;
 use ink_prelude::string::String;
 use ink_storage::traits::{PackedLayout, SpreadLayout};
 use scale::{Decode, Encode};
 
-#[derive(Debug, Decode, Encode, PackedLayout, SpreadLayout)]
+#[derive(Debug, Clone, Decode, Encode, PackedLayout, SpreadLayout)]
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 /// ResourceType 用于标志一个资源的加密类别
 pub enum ResourceType {
@@ -34,7 +34,7 @@ pub struct ResMetadata {
     pub extensions: BTreeMap<String, String>,
 }
 
-#[derive(Debug, Decode, Encode, PackedLayout, SpreadLayout)]
+#[derive(Debug, Clone, Decode, Encode, PackedLayout, SpreadLayout)]
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 /// ResMetadataStored 包含从链码中读出的资源的元数据
 pub struct ResMetadataStored {
@@ -53,7 +53,7 @@ pub struct ResMetadataStored {
     /// 时间戳
     pub timestamp: u64,
     /// 所包含的区块
-    pub block_number: ink_env::Environment::BlockNumber,
+    pub block_number: u32,
     /// 上传的密文的哈希值，由链码计算。明文时应与 `hash` 有相同值。
     pub hash_stored: String,
     /// 上传的密文的大小，由链码确定。时文时应与 `size` 有相同值。

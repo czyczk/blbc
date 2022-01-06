@@ -10,10 +10,12 @@ use ink_lang as ink;
 mod blbc {
     use crate::error_code;
     use crate::model::data::{PlainData, ResMetadataStored};
+    use core::iter::FromIterator;
     use ink_env::hash::Sha2x256;
     use ink_prelude::format;
     use ink_prelude::string::String;
-    use ink_storage::collections::{HashMap, Vec};
+    use ink_prelude::vec::Vec;
+    use ink_storage::collections::HashMap;
     use ink_storage::Box;
 
     #[ink(storage)]
@@ -47,7 +49,7 @@ mod blbc {
 
             // 将数据本体从 Base64 解码
             let data_bytes = match base64::decode(plain_data.data) {
-                Ok(b) => Vec::from_iter(b.bytes()),
+                Ok(b) => Vec::from_iter(b),
                 Err(err) => return Err(format!("无法解析数据本体: {}", err)),
             };
 
@@ -73,7 +75,7 @@ mod blbc {
             // 准备存储元数据
             let metadata_stored = ResMetadataStored {
                 resource_type: plain_data.metadata.resource_type,
-                resource_id: plain_data.metadata.resource_id,
+                resource_id: resource_id.clone(),
                 hash: plain_data.metadata.hash,
                 size: plain_data.metadata.size,
                 extensions: plain_data.metadata.extensions,
@@ -94,14 +96,15 @@ mod blbc {
         }
 
         #[ink(message)]
-        pub fn get_metadata(&self, resource_id: String) -> Result<&ResMetadataStored, String> {
+        pub fn get_metadata(&self, resource_id: String) -> Result<ResMetadataStored, String> {
             // 读 metadata 并返回，若未找到则返回 CODE_NOT_FOUND
             let metadata = match self.res_metadata_map.get(&resource_id) {
                 Some(it) => it,
                 None => return Err(error_code::CODE_NOT_FOUND.into()),
             };
 
-            return Ok(metadata);
+            // 合约现还不支持范型，故不能指定 lifetime，只能把有所有权的东西传出。
+            return Ok(metadata.clone());
         }
     }
 
