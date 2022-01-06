@@ -21,6 +21,9 @@ scale-info = { version = "1.0.0", default-features = false, features = ["derive"
 
 base64 = { version = "0.13.0", default-features = false, features = ["alloc"] }
 
+[dev-dependencies]
+sha2 = "0.10.0"
+
 [lib]
 name = "blbc"
 path = "lib.rs"

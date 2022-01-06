@@ -6,7 +6,7 @@ use ink_prelude::string::String;
 use ink_storage::traits::{PackedLayout, SpreadLayout};
 use scale::{Decode, Encode};
 
-#[derive(Debug, Clone, Decode, Encode, PackedLayout, SpreadLayout)]
+#[derive(Debug, Clone, Eq, PartialEq, Decode, Encode, PackedLayout, SpreadLayout)]
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 /// ResourceType 用于标志一个资源的加密类别
 pub enum ResourceType {
@@ -18,7 +18,7 @@ pub enum ResourceType {
     Offchain,
 }
 
-#[derive(Debug, Decode, Encode, PackedLayout, SpreadLayout)]
+#[derive(Debug, Clone, Eq, PartialEq, Decode, Encode, PackedLayout, SpreadLayout)]
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 /// ResMetadata 包含要传入链码的资源的元数据
 pub struct ResMetadata {
@@ -34,7 +34,7 @@ pub struct ResMetadata {
     pub extensions: BTreeMap<String, String>,
 }
 
-#[derive(Debug, Clone, Decode, Encode, PackedLayout, SpreadLayout)]
+#[derive(Debug, Clone, Eq, PartialEq, Decode, Encode, PackedLayout, SpreadLayout)]
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 /// ResMetadataStored 包含从链码中读出的资源的元数据
 pub struct ResMetadataStored {
