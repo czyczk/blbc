@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0xef2febad5a87974e51b18c321d1d1aa13950ba5fccd3cc0a02ada68a4103d9c2",
+    "hash": "0x22c380d68e6a48784d100b511d960615567770703a1401cc063676d36fa68c2c",
     "language": "ink! 3.0.0-rc7",
     "compiler": "rustc 1.60.0-nightly"
   },
@@ -58,12 +58,12 @@
         {
           "args": [
             {
-              "name": "plain_data",
+              "name": "plain_data_json_str",
               "type": {
                 "displayName": [
-                  "PlainData"
+                  "String"
                 ],
-                "type": 17
+                "type": 3
               }
             },
             {
@@ -72,7 +72,7 @@
                 "displayName": [
                   "Option"
                 ],
-                "type": 19
+                "type": 15
               }
             }
           ],
@@ -86,7 +86,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 20
+            "type": 16
           },
           "selector": "0x86a9e072"
         },
@@ -112,7 +112,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 22
+            "type": 18
           },
           "selector": "0x928198d3"
         }
@@ -520,8 +520,8 @@
                 },
                 {
                   "name": "creator",
-                  "type": 15,
-                  "typeName": "AccountId"
+                  "type": 3,
+                  "typeName": "String"
                 },
                 {
                   "name": "timestamp",
@@ -643,106 +643,6 @@
         "id": 15,
         "type": {
           "def": {
-            "composite": {
-              "fields": [
-                {
-                  "type": 16,
-                  "typeName": "[u8; 32]"
-                }
-              ]
-            }
-          },
-          "path": [
-            "ink_env",
-            "types",
-            "AccountId"
-          ]
-        }
-      },
-      {
-        "id": 16,
-        "type": {
-          "def": {
-            "array": {
-              "len": 32,
-              "type": 7
-            }
-          }
-        }
-      },
-      {
-        "id": 17,
-        "type": {
-          "def": {
-            "composite": {
-              "fields": [
-                {
-                  "name": "metadata",
-                  "type": 18,
-                  "typeName": "ResMetadata"
-                },
-                {
-                  "name": "data",
-                  "type": 3,
-                  "typeName": "String"
-                }
-              ]
-            }
-          },
-          "path": [
-            "blbc",
-            "model",
-            "data",
-            "PlainData"
-          ]
-        }
-      },
-      {
-        "id": 18,
-        "type": {
-          "def": {
-            "composite": {
-              "fields": [
-                {
-                  "name": "resource_type",
-                  "type": 10,
-                  "typeName": "ResourceType"
-                },
-                {
-                  "name": "resource_id",
-                  "type": 3,
-                  "typeName": "String"
-                },
-                {
-                  "name": "hash",
-                  "type": 3,
-                  "typeName": "String"
-                },
-                {
-                  "name": "size",
-                  "type": 11,
-                  "typeName": "u64"
-                },
-                {
-                  "name": "extensions",
-                  "type": 12,
-                  "typeName": "BTreeMap<String, String>"
-                }
-              ]
-            }
-          },
-          "path": [
-            "blbc",
-            "model",
-            "data",
-            "ResMetadata"
-          ]
-        }
-      },
-      {
-        "id": 19,
-        "type": {
-          "def": {
             "variant": {
               "variants": [
                 {
@@ -773,7 +673,7 @@
         }
       },
       {
-        "id": 20,
+        "id": 16,
         "type": {
           "def": {
             "variant": {
@@ -781,7 +681,7 @@
                 {
                   "fields": [
                     {
-                      "type": 21
+                      "type": 17
                     }
                   ],
                   "index": 0,
@@ -802,7 +702,7 @@
           "params": [
             {
               "name": "T",
-              "type": 21
+              "type": 17
             },
             {
               "name": "E",
@@ -815,7 +715,7 @@
         }
       },
       {
-        "id": 21,
+        "id": 17,
         "type": {
           "def": {
             "tuple": []
@@ -823,7 +723,7 @@
         }
       },
       {
-        "id": 22,
+        "id": 18,
         "type": {
           "def": {
             "variant": {
