@@ -1,7 +1,7 @@
 {
   "source": {
-    "hash": "0x303ec0e742642d4459d1eff9c408bc4396d6c8ccb8b569aabe2285ed704710ec",
-    "language": "ink! 3.0.0-rc7",
+    "hash": "0x72f85ea500646238caa5e84fa2c5ac59dff68cf5d797cef7484101ab3bc9bac4",
+    "language": "ink! 3.0.0-rc8",
     "compiler": "rustc 1.60.0-nightly"
   },
   "contract": {
@@ -11,15 +11,14 @@
       "[your_name] <[your_email]>"
     ]
   },
-  "V1": {
+  "V3": {
     "spec": {
       "constructors": [
         {
           "args": [],
           "docs": [],
-          "name": [
-            "default"
-          ],
+          "label": "default",
+          "payable": false,
           "selector": "0xed4b9d1b"
         }
       ],
@@ -30,7 +29,7 @@
             {
               "docs": [],
               "indexed": false,
-              "name": "event_id",
+              "label": "event_id",
               "type": {
                 "displayName": [
                   "String"
@@ -41,7 +40,7 @@
             {
               "docs": [],
               "indexed": false,
-              "name": "resource_id",
+              "label": "resource_id",
               "type": {
                 "displayName": [
                   "String"
@@ -51,14 +50,14 @@
             }
           ],
           "docs": [],
-          "name": "ResourceCreated"
+          "label": "ResourceCreated"
         }
       ],
       "messages": [
         {
           "args": [
             {
-              "name": "plain_data",
+              "label": "plain_data",
               "type": {
                 "displayName": [
                   "PlainData"
@@ -67,7 +66,7 @@
               }
             },
             {
-              "name": "event_id",
+              "label": "event_id",
               "type": {
                 "displayName": [
                   "Option"
@@ -77,10 +76,8 @@
             }
           ],
           "docs": [],
+          "label": "create_plain_data",
           "mutates": true,
-          "name": [
-            "create_plain_data"
-          ],
           "payable": false,
           "returnType": {
             "displayName": [
@@ -93,7 +90,7 @@
         {
           "args": [
             {
-              "name": "resource_id",
+              "label": "resource_id",
               "type": {
                 "displayName": [
                   "String"
@@ -103,10 +100,8 @@
             }
           ],
           "docs": [],
+          "label": "get_metadata",
           "mutates": false,
-          "name": [
-            "get_metadata"
-          ],
           "payable": false,
           "returnType": {
             "displayName": [
