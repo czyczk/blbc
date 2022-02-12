@@ -17,6 +17,7 @@ scale = { package = "parity-scale-codec", version = "2.1", default-features = fa
 scale-info = { version = "1.0.0", default-features = false, features = ["derive"], optional = true }
 
 base64 = { version = "0.13.0", default-features = false, features = ["alloc"] }
+chrono = { version = "0.4.19", default-features = false, features = ["alloc"] }
 
 [dev-dependencies]
 sha2 = "0.10.0"
@@ -25,8 +26,8 @@ sha2 = "0.10.0"
 name = "blbc"
 path = "lib.rs"
 crate-type = [
-	# Used for normal contract Wasm blobs.
-	"cdylib",
+    # Used for normal contract Wasm blobs.
+    "cdylib",
 ]
 
 [features]
@@ -40,5 +41,6 @@ std = [
     "scale/std",
     "scale-info/std",
     "base64/std",
+    "chrono/std",
 ]
 ink-as-dependency = []

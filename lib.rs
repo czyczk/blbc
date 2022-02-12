@@ -51,6 +51,9 @@ mod blbc {
 
         #[ink(message)]
         pub fn get_metadata(&self, resource_id: String) -> Result<ResMetadataStored, String> {
+            ink_env::debug_println!("---");
+            ink_env::debug_println!("get_metadata");
+
             // 读 metadata 并返回，若未找到则返回 CODE_NOT_FOUND
             let metadata = match self.res_metadata_map.get(&resource_id) {
                 Some(it) => it,

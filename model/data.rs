@@ -6,6 +6,8 @@ use ink_prelude::string::String;
 use ink_storage::traits::{PackedLayout, SpreadLayout};
 use scale::{Decode, Encode};
 
+use super::datetime::ScaleDateTimeLocal;
+
 #[derive(Debug, Clone, Eq, PartialEq, Decode, Encode, PackedLayout, SpreadLayout)]
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 /// ResourceType 用于标志一个资源的加密类别
@@ -51,7 +53,7 @@ pub struct ResMetadataStored {
     /// 资源创建者地址
     pub creator: AccountId,
     /// 时间戳
-    pub timestamp: u64,
+    pub timestamp: ScaleDateTimeLocal,
     /// 所包含的区块
     pub block_number: u32,
     /// 上传的密文的哈希值，由链码计算。明文时应与 `hash` 有相同值。
