@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0x72f85ea500646238caa5e84fa2c5ac59dff68cf5d797cef7484101ab3bc9bac4",
+    "hash": "0x28cf4fea7b67948ee8bd6482370c99e06d7ddc146c6f086add371493b445f533",
     "language": "ink! 3.0.0-rc8",
     "compiler": "rustc 1.60.0-nightly"
   },
@@ -62,7 +62,7 @@
                 "displayName": [
                   "PlainData"
                 ],
-                "type": 17
+                "type": 18
               }
             },
             {
@@ -71,7 +71,7 @@
                 "displayName": [
                   "Option"
                 ],
-                "type": 19
+                "type": 20
               }
             }
           ],
@@ -83,7 +83,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 20
+            "type": 21
           },
           "selector": "0x86a9e072"
         },
@@ -107,7 +107,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 22
+            "type": 23
           },
           "selector": "0x928198d3"
         }
@@ -520,8 +520,8 @@
                 },
                 {
                   "name": "timestamp",
-                  "type": 11,
-                  "typeName": "u64"
+                  "type": 17,
+                  "typeName": "ScaleDateTimeLocal"
                 },
                 {
                   "name": "block_number",
@@ -669,11 +669,19 @@
         "id": 17,
         "type": {
           "def": {
+            "primitive": "str"
+          }
+        }
+      },
+      {
+        "id": 18,
+        "type": {
+          "def": {
             "composite": {
               "fields": [
                 {
                   "name": "metadata",
-                  "type": 18,
+                  "type": 19,
                   "typeName": "ResMetadata"
                 },
                 {
@@ -693,7 +701,7 @@
         }
       },
       {
-        "id": 18,
+        "id": 19,
         "type": {
           "def": {
             "composite": {
@@ -735,7 +743,7 @@
         }
       },
       {
-        "id": 19,
+        "id": 20,
         "type": {
           "def": {
             "variant": {
@@ -768,7 +776,7 @@
         }
       },
       {
-        "id": 20,
+        "id": 21,
         "type": {
           "def": {
             "variant": {
@@ -776,7 +784,7 @@
                 {
                   "fields": [
                     {
-                      "type": 21
+                      "type": 22
                     }
                   ],
                   "index": 0,
@@ -797,7 +805,7 @@
           "params": [
             {
               "name": "T",
-              "type": 21
+              "type": 22
             },
             {
               "name": "E",
@@ -810,7 +818,7 @@
         }
       },
       {
-        "id": 21,
+        "id": 22,
         "type": {
           "def": {
             "tuple": []
@@ -818,7 +826,7 @@
         }
       },
       {
-        "id": 22,
+        "id": 23,
         "type": {
           "def": {
             "variant": {
