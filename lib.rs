@@ -31,6 +31,8 @@ mod blbc {
         pub resource_id: String,
     }
 
+    pub const EVENT_ID_FOR_RETURNED_VALUE: &'static str = "~RET~";
+
     impl Blbc {
         #[ink(constructor)]
         pub fn default() -> Self {

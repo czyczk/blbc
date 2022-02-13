@@ -7,7 +7,7 @@ use ink_prelude::string::String;
 use ink_prelude::vec::Vec;
 
 use crate::{
-    blbc::{Blbc, ResourceCreated},
+    blbc::{Blbc, ResourceCreated, EVENT_ID_FOR_RETURNED_VALUE},
     model::{
         data::{PlainData, ResMetadataStored},
         datetime::ScaleDateTimeLocal,
@@ -78,6 +78,12 @@ pub fn create_plain_data(
     ctx.res_map.insert(resource_id.clone(), data_bytes);
     ctx.res_metadata_map
         .insert(resource_id.clone(), metadata_stored);
+
+    // 通过事件返回值
+    ctx.env().emit_event(ResourceCreated {
+        event_id: EVENT_ID_FOR_RETURNED_VALUE.into(),
+        resource_id: resource_id.clone(),
+    });
 
     if let Some(event_id) = event_id {
         ctx.env().emit_event(ResourceCreated {
