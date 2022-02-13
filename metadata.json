@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0x0f6da71d227160e671009b9af79bddc07db9a5f3c4169c5485f62d5a8bd82f4f",
+    "hash": "0xaf33f496734080f2ac11f5e8922ff49e2c2871dcaf91c8c4b5d85f6b0be8c671",
     "language": "ink! 3.0.0-rc8",
     "compiler": "rustc 1.60.0-nightly"
   },
@@ -110,6 +110,30 @@
             "type": 23
           },
           "selector": "0x928198d3"
+        },
+        {
+          "args": [
+            {
+              "label": "resource_id",
+              "type": {
+                "displayName": [
+                  "String"
+                ],
+                "type": 3
+              }
+            }
+          ],
+          "docs": [],
+          "label": "get_data",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 24
+          },
+          "selector": "0x7eb2815a"
         }
       ]
     },
@@ -856,6 +880,48 @@
             {
               "name": "T",
               "type": 9
+            },
+            {
+              "name": "E",
+              "type": 3
+            }
+          ],
+          "path": [
+            "Result"
+          ]
+        }
+      },
+      {
+        "id": 24,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 3
+                    }
+                  ],
+                  "index": 0,
+                  "name": "Ok"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 3
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Err"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 3
             },
             {
               "name": "E",
