@@ -31,7 +31,7 @@ mod blbc {
         pub resource_id: String,
     }
 
-    pub const EVENT_ID_FOR_RETURNED_VALUE: &'static str = "~RET~";
+    pub const EVENT_ID_FOR_RETURNED_VALUE: &'static str = "~TXRET~";
 
     impl Blbc {
         #[ink(constructor)]
@@ -64,6 +64,24 @@ mod blbc {
 
             // 合约现还不支持范型，故不能指定 lifetime，只能把有所有权的东西传出。
             return Ok(metadata.clone());
+        }
+
+        #[ink(message)]
+        // 与 Go 链码不同，此处因为 API 不传输二进制，数据内容须以 Base64 编码传出。
+        pub fn get_data(&self, resource_id: String) -> Result<String, String> {
+            ink_env::debug_println!("---");
+            ink_env::debug_println!("get_metadata");
+
+            // 读 data 并返回，若未找到则返回 codeNotFound
+            let data_bytes = self
+                .res_map
+                .get(&resource_id)
+                .ok_or::<String>(error_code::CODE_NOT_FOUND.into())?;
+
+            // 因为 API 不传输二进制，数据内容须以 Base64 编码传出。
+            ink_env::debug_println!("正在将数据以 Base64 编码");
+            let data_as_base64: String = base64::encode(data_bytes);
+            return Ok(data_as_base64);
         }
     }
 
