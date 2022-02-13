@@ -70,7 +70,7 @@ mod blbc {
         // 与 Go 链码不同，此处因为 API 不传输二进制，数据内容须以 Base64 编码传出。
         pub fn get_data(&self, resource_id: String) -> Result<String, String> {
             ink_env::debug_println!("---");
-            ink_env::debug_println!("get_metadata");
+            ink_env::debug_println!("get_data");
 
             // 读 data 并返回，若未找到则返回 codeNotFound
             let data_bytes = self
