@@ -25,7 +25,7 @@ pub fn create_plain_data(
     // 检查资源 ID 是否被占用
     let resource_id = &plain_data.metadata.resource_id;
     ink_env::debug_println!("收到资源 ID: {}", &resource_id);
-    if ctx.res_metadata_map.contains_key(resource_id) {
+    if ctx.res_metadata_map.get(resource_id).is_some() {
         return Err(format!("资源 ID '{}' 已被占用", resource_id));
     }
 
@@ -75,9 +75,9 @@ pub fn create_plain_data(
 
     // 存储数据
     ink_env::debug_println!("正在存储数据");
-    ctx.res_map.insert(resource_id.clone(), data_bytes);
+    ctx.res_map.insert(resource_id.clone(), &data_bytes);
     ctx.res_metadata_map
-        .insert(resource_id.clone(), metadata_stored);
+        .insert(resource_id.clone(), &metadata_stored);
 
     // 通过事件返回值
     ctx.env().emit_event(ResourceCreated {

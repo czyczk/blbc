@@ -7,7 +7,7 @@ pub mod model;
 
 use ink_lang as ink;
 
-#[ink::contract(dynamic_storage_allocator = true)]
+#[ink::contract]
 mod blbc {
     use crate::{
         data, error_code,
@@ -15,14 +15,15 @@ mod blbc {
     };
     use ink_prelude::string::String;
     use ink_prelude::vec::Vec;
-    use ink_storage::collections::HashMap;
+    use ink_storage::{traits::SpreadAllocate, Mapping};
 
     #[ink(storage)]
+    #[derive(SpreadAllocate)]
     pub struct Blbc {
         /// 存储通过资源 ID 可以找到的链上资源，资源内容是字节数组
-        pub res_map: HashMap<String, Vec<u8>>,
+        pub res_map: Mapping<String, Vec<u8>>,
         /// 存储通过资源 ID 可以找到的资源元数据
-        pub res_metadata_map: HashMap<String, ResMetadataStored>,
+        pub res_metadata_map: Mapping<String, ResMetadataStored>,
     }
 
     #[ink(event)]
@@ -36,10 +37,7 @@ mod blbc {
     impl Blbc {
         #[ink(constructor)]
         pub fn default() -> Self {
-            Self {
-                res_map: Default::default(),
-                res_metadata_map: Default::default(),
-            }
+            ink_lang::utils::initialize_contract(|_: &mut Self| {})
         }
 
         #[ink(message)]
