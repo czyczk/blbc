@@ -126,9 +126,11 @@ mod blbc {
 
         #[ink::test]
         fn default_works() {
-            let blbc = Blbc::default();
-            assert_eq!(blbc.res_map.len(), 0);
-            assert_eq!(blbc.res_metadata_map.len(), 0);
+            let _blbc = Blbc::default();
+
+            // The new `Mapping` since rc-9 cannot be counted
+            // assert_eq!(blbc.res_map.len(), 0);
+            // assert_eq!(blbc.res_metadata_map.len(), 0);
         }
 
         #[ink::test]
@@ -145,7 +147,7 @@ mod blbc {
             // Check if the data in map is as expected
             assert_eq!(
                 blbc.res_map.get(&resource_id),
-                Some(&DATA1.as_bytes().to_owned())
+                Some(DATA1.as_bytes().to_owned())
             );
 
             // Check if the stored metadata is correct
