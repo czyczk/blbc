@@ -71,3 +71,29 @@ pub struct PlainData {
     /// 资源的数据本体（Base64 编码）
     pub data: String,
 }
+#[derive(Decode, Encode)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+/// EncryptedData 用于表示要传入链码的密文资源
+pub struct EncryptedData {
+    /// 资源的元数据
+    pub metadata: ResMetadata,
+    /// 资源的数据本体（密文）（Base64 编码）
+    pub data: String,
+    /// 对称密钥（密文）（Base64 编码）
+    pub key: String,
+    /// 策略
+    pub policy: String,
+}
+#[derive(Decode, Encode)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+/// OffchainData 用于表示要传入链码的链下资源
+pub struct OffchainData {
+    /// 资源的元数据
+    pub metadata: ResMetadata,
+    /// 资源在 IPFS 网络上的内容 ID
+    pub cid: String,
+    /// 对称密钥（密文）（Base64 编码）
+    pub key: String,
+    /// 策略
+    pub policy: String,
+}

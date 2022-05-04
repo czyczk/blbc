@@ -11,11 +11,12 @@ use ink_lang as ink;
 mod blbc {
     use crate::{
         data, error_code,
-        model::data::{PlainData, ResMetadataStored},
+        model::data::{PlainData, EncryptedData, OffchainData, ResMetadataStored},
     };
     use ink_prelude::string::String;
     use ink_prelude::vec::Vec;
     use ink_storage::{traits::SpreadAllocate, Mapping};
+
 
     #[ink(storage)]
     #[derive(SpreadAllocate)]
@@ -24,6 +25,12 @@ mod blbc {
         pub res_map: Mapping<String, Vec<u8>>,
         /// 存储通过资源 ID 可以找到的资源元数据
         pub res_metadata_map: Mapping<String, ResMetadataStored>,
+        /// 存储通过资源 ID 可以找到的对称密钥
+        pub res_key_map: Mapping<String, Vec<u8>>,
+        /// 存储通过资源 ID 可以找到的策略
+        pub res_policy_map: Mapping<String, String>,
+        /// 存储通过资源 ID 可以找到的资源在 IPFS 网络上的内容 ID
+        pub res_cid_map: Mapping<String, String>,
     }
 
     #[ink(event)]
@@ -47,6 +54,24 @@ mod blbc {
             event_id: Option<String>,
         ) -> Result<(), String> {
             data::create_plain_data(self, plain_data, event_id)
+        }
+
+        #[ink(message)]
+        pub fn create_encrypted_data(
+            &mut self,
+            encrypted_data: EncryptedData,
+            event_id: Option<String>,
+        ) -> Result<(), String> {
+            data::create_encrypted_data(self, encrypted_data, event_id)
+        }
+
+        #[ink(message)]
+        pub fn create_offchain_data(
+            &mut self,
+            offchain_data: OffchainData,
+            event_id: Option<String>,
+        ) -> Result<(), String> {
+            data::create_offchain_data(self, offchain_data, event_id)
         }
 
         #[ink(message)]
