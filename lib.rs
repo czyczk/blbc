@@ -29,8 +29,6 @@ mod blbc {
         pub res_key_map: Mapping<String, Vec<u8>>,
         /// 存储通过资源 ID 可以找到的策略
         pub res_policy_map: Mapping<String, String>,
-        /// 存储通过资源 ID 可以找到的资源在 IPFS 网络上的内容 ID
-        pub res_cid_map: Mapping<String, String>,
     }
 
     #[ink(event)]
