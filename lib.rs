@@ -321,10 +321,50 @@ mod blbc {
             assert!(blbc.create_offchain_data(sample_offchain_data2, None).is_err());
         }
 
+        #[ink::test]
+        fn test_get_data() {
+            // Prepare
+            let mut blbc = Blbc::default();
+            let sample_plain_data1 = get_sample_plain_data1();
+            let resource_id = sample_plain_data1.metadata.resource_id.clone();
+            let data_as_base64: String = sample_plain_data1.data.clone();
+
+            // Invoke with sample_plain_data1 and expect the return value to be Ok()
+            assert!(blbc.create_plain_data(sample_plain_data1, None).is_ok());
+
+            // Invoke get_data and expect the return value to be Ok()
+            let data_to_be_checked = match blbc.get_data(resource_id) {
+                Ok(b) => b,
+                Err(msg) => panic!("{}", msg),
+            };
+
+            // Check if the data in map is as expected
+            assert_eq!(
+                data_as_base64,
+                data_to_be_checked
+            );
+        }
+
+        #[ink::test]
+        fn test_get_data_with_non_existent_id() {
+            // Prepare
+            let mut blbc = Blbc::default();
+            let sample_plain_data1 = get_sample_plain_data1();
+            let resource_id = sample_plain_data1.metadata.resource_id.clone();
+            let mut non_existent_resource_id = resource_id.clone();
+            non_existent_resource_id.push_str("_non_existent");
+
+            // Invoke with sample_plain_data1 and expect the return value to be Ok()
+            assert!(blbc.create_plain_data(sample_plain_data1, None).is_ok());
+
+            // Invoke with a non existent resource ID and expect the response status to be ERROR
+            assert!(blbc.get_data(non_existent_resource_id).is_err());
+        }
+
 
         const DATA1: &str = "data1";
         const DATA2: &str = "data2";
-        const DATA3: &str = "data3";
+        //const DATA3: &str = "data3";
 
         // 明文数据
         // 资源 ID: "001"
