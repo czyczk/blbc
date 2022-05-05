@@ -122,6 +122,20 @@ mod blbc {
             let key_as_base64: String = base64::encode(key_bytes);
             return Ok(key_as_base64);
         }
+
+        #[ink(message)]
+        pub fn get_policy(&self, resource_id: String) -> Result<String, String> {
+            ink_env::debug_println!("---");
+            ink_env::debug_println!("get_policy");
+
+            // 读 policy 并返回，若未找到则返回 codeNotFound
+            let policy_bytes = self
+                .res_policy_map
+                .get(&resource_id)
+                .ok_or::<String>(error_code::CODE_NOT_FOUND.into())?;
+
+            return Ok(policy_bytes);
+        }
     }
 
     /// Unit tests in Rust are normally defined within such a `#[cfg(test)]`
@@ -461,6 +475,60 @@ mod blbc {
 
             // Invoke with a non existent resource ID and expect the response status to be ERROR
             assert!(blbc.get_key(non_existent_resource_id).is_err());
+        }
+
+        #[ink::test]
+        fn test_get_policy() {
+            // Prepare
+            let mut blbc = Blbc::default();
+            let sample_encrypted_data1 = get_sample_encrypted_data1();
+            let resource_id = sample_encrypted_data1.metadata.resource_id.clone();
+            let policy = sample_encrypted_data1.policy.clone();
+
+            // Invoke with sample_encrypted_data1 and expect the return value to be Ok()
+            assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+
+            // Invoke get_policy and expect the return value to be Ok()
+            let policy_to_be_checked = match blbc.get_policy(resource_id) {
+                Ok(b) => b,
+                Err(msg) => panic!("{}", msg),
+            };
+
+            // Check if the policy in res_policy_map is as expected
+            assert_eq!(
+                policy,
+                policy_to_be_checked
+            );
+
+            // Prepare the arg with offchain data and do it again
+            let sample_offchain_data1 = get_sample_offchain_data1();
+            let resource_id2 = sample_offchain_data1.metadata.resource_id.clone();
+            let policy2 = sample_offchain_data1.policy.clone();
+            assert!(blbc.create_offchain_data(sample_offchain_data1, None).is_ok());
+            let policy_to_be_checked2 = match blbc.get_policy(resource_id2) {
+                Ok(b) => b,
+                Err(msg) => panic!("{}", msg),
+            };
+            assert_eq!(
+                policy2,
+                policy_to_be_checked2
+            );
+        }
+
+        #[ink::test]
+        fn test_get_policy_with_non_existent_id() {
+            // Prepare
+            let mut blbc = Blbc::default();
+            let sample_encrypted_data1 = get_sample_encrypted_data1();
+            let resource_id = sample_encrypted_data1.metadata.resource_id.clone();
+            let mut non_existent_resource_id = resource_id.clone();
+            non_existent_resource_id.push_str("_non_existent");
+
+            // Invoke with sample_encrypted_data1 and expect the return value to be Ok()
+            assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+
+            // Invoke with a non existent resource ID and expect the response status to be ERROR
+            assert!(blbc.get_policy(non_existent_resource_id).is_err());
         }
 
 
