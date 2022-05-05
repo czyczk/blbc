@@ -322,6 +322,50 @@ mod blbc {
         }
 
         #[ink::test]
+        fn test_get_metadata() {
+            // Prepare
+            let mut blbc = Blbc::default();
+            let sample_plain_data1 = get_sample_plain_data1();
+            let resource_id = sample_plain_data1.metadata.resource_id.clone();
+            let extensions = sample_plain_data1.metadata.extensions.clone();
+            let hash = sample_plain_data1.metadata.hash.clone();
+            let size = sample_plain_data1.metadata.size.clone();
+            let resource_type = sample_plain_data1.metadata.resource_type.clone();
+
+            // Invoke with sample_plain_data1 and expect the return value to be Ok()
+            assert!(blbc.create_plain_data(sample_plain_data1, None).is_ok());
+
+            // Invoke get_metadata and expect the return value to be Ok()
+            let res_meta_data = match blbc.get_metadata(resource_id.clone()) {
+                Ok(b) => b,
+                Err(msg) => panic!("{}", msg),
+            };
+
+            // Check if data is as expected
+            assert_eq!(resource_id, res_meta_data.resource_id);
+            assert_eq!(extensions, res_meta_data.extensions);
+            assert_eq!(hash, res_meta_data.hash);
+            assert_eq!(size, res_meta_data.size);
+            assert_eq!(resource_type, res_meta_data.resource_type);
+        }
+
+        #[ink::test]
+        fn test_get_metadata_with_non_existent_id() {
+            // Prepare
+            let mut blbc = Blbc::default();
+            let sample_plain_data1 = get_sample_plain_data1();
+            let resource_id = sample_plain_data1.metadata.resource_id.clone();
+            let mut non_existent_resource_id = resource_id.clone();
+            non_existent_resource_id.push_str("_non_existent");
+
+            // Invoke with sample_plain_data1 and expect the return value to be Ok()
+            assert!(blbc.create_plain_data(sample_plain_data1, None).is_ok());
+
+            // Invoke with a non existent resource ID and expect the response status to be ERROR
+            assert!(blbc.get_metadata(non_existent_resource_id).is_err());
+        }
+
+        #[ink::test]
         fn test_get_data() {
             // Prepare
             let mut blbc = Blbc::default();
