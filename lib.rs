@@ -118,6 +118,7 @@ mod blbc {
 
         use crate::model::data::{PlainData, ResMetadata, ResourceType};
         use alloc::collections::BTreeMap;
+        use std::iter::FromIterator;
         /// Imports `ink_lang` so we can use `#[ink::test]`.
         use ink_lang as ink;
         use sha2::{Digest, Sha256};
@@ -199,6 +200,128 @@ mod blbc {
                 .is_err());
         }
 
+        #[ink::test]
+        fn create_encrypted_data_with_normal_data_works() {
+            // Prepare
+            let mut blbc = Blbc::default();
+            let sample_encrypted_data1 = get_sample_encrypted_data1();
+            let resource_id = sample_encrypted_data1.metadata.resource_id.clone();
+            let metadata = sample_encrypted_data1.metadata.clone();
+            let key = sample_encrypted_data1.key.clone();
+            let policy = sample_encrypted_data1.policy.clone();
+
+            // 将 key 从 Base64 解码
+            let key_decoded = match base64::decode(key) {
+                Ok(b) => Vec::from_iter(b),
+                Err(err) => panic!("无法解析 key: {}", err),
+            };
+            // Invoke with sample_encrypted_data1 and expect the return value to be Ok()
+            assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+
+            // Check if the data in maps is as expected
+            assert_eq!(
+                blbc.res_map.get(&resource_id),
+                Some(DATA1.as_bytes().to_owned())
+            );
+            assert_eq!(
+                blbc.res_key_map.get(&resource_id),
+                Some(key_decoded.to_owned())
+            );
+            assert_eq!(
+                blbc.res_policy_map.get(&resource_id),
+                Some(policy)
+            );
+
+            // Check if the stored metadata is correct
+            let metadata_stored = blbc.res_metadata_map.get(&resource_id);
+            assert!(metadata_stored.is_some());
+            let metadata_stored = metadata_stored.unwrap();
+            assert_eq!(resource_id, metadata_stored.resource_id);
+            assert_eq!(metadata.resource_type, metadata_stored.resource_type);
+            assert_eq!(metadata.hash, metadata_stored.hash);
+            assert_eq!(metadata.hash, metadata_stored.hash_stored);
+            assert_eq!(metadata.size, metadata_stored.size);
+            assert_eq!(metadata.size, metadata_stored.size_stored);
+        }
+
+        #[ink::test]
+        fn create_encrypted_data_with_duplicate_resource_ids_fails_with_err() {
+            // Prepare
+            let mut blbc = Blbc::default();
+            let sample_encrypted_data1 = get_sample_encrypted_data1();
+            let mut sample_encrypted_data2 = get_sample_encrypted_data2();
+            // Deliberately change the resource ID of data2 to be the same as data1
+            sample_encrypted_data2.metadata.resource_id =
+                sample_encrypted_data1.metadata.resource_id.clone();
+
+            // Invoke with data1 and expect the return value to be Ok()
+            assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+
+            // Invoke with data2 and expect the return value to be Err()
+            assert!(blbc.create_encrypted_data(sample_encrypted_data2, None).is_err());
+        }
+
+        #[ink::test]
+        fn create_offchain_data_with_normal_data_works() {
+            // Prepare
+            let mut blbc = Blbc::default();
+            let sample_offchain_data1 = get_sample_offchain_data1();
+            let resource_id = sample_offchain_data1.metadata.resource_id.clone();
+            let metadata = sample_offchain_data1.metadata.clone();
+            let cid = sample_offchain_data1.cid.clone();
+            let key = sample_offchain_data1.key.clone();
+            let policy = sample_offchain_data1.policy.clone();
+
+            // 将 key 从 Base64 解码
+            let key_decoded = match base64::decode(key) {
+                Ok(b) => Vec::from_iter(b),
+                Err(err) => panic!("无法解析 key: {}", err),
+            };
+            // Invoke with sample_encrypted_data1 and expect the return value to be Ok()
+            assert!(blbc.create_offchain_data(sample_offchain_data1, None).is_ok());
+
+            // Check if the data in maps is as expected
+            assert_eq!(
+                blbc.res_map.get(&resource_id),
+                Some(Vec::from_iter(cid.into_bytes()))
+            );
+            assert_eq!(
+                blbc.res_key_map.get(&resource_id),
+                Some(key_decoded.to_owned())
+            );
+            assert_eq!(
+                blbc.res_policy_map.get(&resource_id),
+                Some(policy)
+            );
+
+            // Check if the stored metadata is correct
+            let metadata_stored = blbc.res_metadata_map.get(&resource_id);
+            assert!(metadata_stored.is_some());
+            let metadata_stored = metadata_stored.unwrap();
+            assert_eq!(resource_id, metadata_stored.resource_id);
+            assert_eq!(metadata.resource_type, metadata_stored.resource_type);
+            assert_eq!(metadata.hash, metadata_stored.hash);
+            assert_eq!(metadata.size, metadata_stored.size);
+        }
+
+        #[ink::test]
+        fn create_offchain_data_with_duplicate_resource_ids_fails_with_err() {
+            // Prepare
+            let mut blbc = Blbc::default();
+            let sample_offchain_data1 = get_sample_offchain_data1();
+            let mut sample_offchain_data2 = get_sample_offchain_data2();
+            // Deliberately change the resource ID of data2 to be the same as data1
+            sample_offchain_data2.metadata.resource_id =
+                sample_offchain_data1.metadata.resource_id.clone();
+
+            // Invoke with data1 and expect the return value to be Ok()
+            assert!(blbc.create_offchain_data(sample_offchain_data1, None).is_ok());
+
+            // Invoke with data2 and expect the return value to be Err()
+            assert!(blbc.create_offchain_data(sample_offchain_data2, None).is_err());
+        }
+
+
         const DATA1: &str = "data1";
         const DATA2: &str = "data2";
         const DATA3: &str = "data3";
@@ -254,6 +377,124 @@ mod blbc {
                     extensions: extension_map,
                 },
                 data: base64::encode(DATA2.as_bytes()),
+            };
+        }
+
+        // 加密数据
+        // 资源 ID: "101"
+        // 名称: "Sample Encrypted Data 1"
+        // 内容: base64(encrypt(data1))
+        fn get_sample_encrypted_data1() -> EncryptedData {
+            use ink_prelude::string::String;
+
+            let mut hasher = Sha256::new();
+            hasher.update(DATA1.as_bytes());
+            let hash_bytes = hasher.finalize();
+            let extension_map: BTreeMap<String, String> = BTreeMap::from([
+                ("dataType".into(), "document".into()),
+                ("name".into(), "Sample Encrypted Data 1".into()),
+            ]);
+
+
+            return EncryptedData {
+                metadata: ResMetadata {
+                    resource_type: ResourceType::Encrypted,
+                    resource_id: "101".into(),
+                    hash: base64::encode(hash_bytes),
+                    size: DATA1.as_bytes().len() as u64,
+                    extensions: extension_map,
+                },
+                // 加解密都在链码外进行
+                data: base64::encode(DATA1.as_bytes()),
+                key: base64::encode("123456".as_bytes()),
+                policy: "(DeptType == \"computer\" && DeptLevel == 2)".into(),
+            };
+        }
+
+        // 加密数据
+        // 资源 ID: "102"
+        // 名称: "示例加密数据2"
+        // 内容: base64(encrypt(data2))
+        fn get_sample_encrypted_data2() -> EncryptedData {
+            use ink_prelude::string::String;
+
+            let mut hasher = Sha256::new();
+            hasher.update(DATA2.as_bytes());
+            let hash_bytes = hasher.finalize();
+            let extension_map: BTreeMap<String, String> = BTreeMap::from([
+                ("dataType".into(), "document".into()),
+                ("name".into(), "示例加密数据2".into()),
+            ]);
+
+
+            return EncryptedData {
+                metadata: ResMetadata {
+                    resource_type: ResourceType::Encrypted,
+                    resource_id: "102".into(),
+                    hash: base64::encode(hash_bytes),
+                    size: DATA2.as_bytes().len() as u64,
+                    extensions: extension_map,
+                },
+                // 加解密都在链码外进行
+                data: base64::encode(DATA2.as_bytes()),
+                key: base64::encode("123456".as_bytes()),
+                policy: "(DeptType == \"computer\" && DeptLevel == 1)".into(),
+            };
+        }
+
+        // 链下数据
+        // 资源 ID: "201"
+        // 名称: "Sample Offchain Data 1"
+        fn get_sample_offchain_data1() -> OffchainData {
+            use ink_prelude::string::String;
+
+            let mut hasher = Sha256::new();
+            hasher.update(DATA1.as_bytes());
+            let hash_bytes = hasher.finalize();
+            let extension_map: BTreeMap<String, String> = BTreeMap::from([
+                ("dataType".into(), "document".into()),
+                ("name".into(), "Sample Offchain Data 1".into()),
+            ]);
+
+            return OffchainData {
+                metadata: ResMetadata {
+                    resource_type: ResourceType::Offchain,
+                    resource_id: "201".into(),
+                    hash: base64::encode(hash_bytes),
+                    size: DATA1.as_bytes().len() as u64,
+                    extensions: extension_map,
+                },
+                cid: "654321".into(),
+                key: base64::encode("123456".as_bytes()),
+                policy: "Encryption strategy".into(),
+            };
+        }
+
+        // 链下数据
+        // 资源 ID: "202"
+        // 名称: "示例链下数据2"
+        fn get_sample_offchain_data2() -> OffchainData {
+            use ink_prelude::string::String;
+
+            let mut hasher = Sha256::new();
+            hasher.update(DATA2.as_bytes());
+            let hash_bytes = hasher.finalize();
+            let extension_map: BTreeMap<String, String> = BTreeMap::from([
+                ("dataType".into(), "document".into()),
+                ("name".into(), "示例链下数据2".into()),
+            ]);
+
+            return OffchainData {
+                metadata: ResMetadata {
+                    resource_type: ResourceType::Offchain,
+                    resource_id: "202".into(),
+                    hash: base64::encode(hash_bytes),
+                    size: DATA2.as_bytes().len() as u64,
+                    extensions: extension_map,
+                },
+                cid: "654321".into(),
+                key: base64::encode("123456".as_bytes()),
+                policy: "Encryption strategy".into(),
             };
         }
     }

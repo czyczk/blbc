@@ -143,7 +143,7 @@ pub fn create_encrypted_data(
 
     // 将 key 从 Base64 解码
     ink_env::debug_println!("正在从 Base64 解码");
-    let key_decoded = match base64::decode(&encrypted_data.key) {
+    let key_decoded = match base64::decode(encrypted_data.key) {
         Ok(b) => Vec::from_iter(b),
         Err(err) => return Err(format!("无法解析 key: {}", err)),
     };

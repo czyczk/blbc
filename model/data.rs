@@ -58,7 +58,7 @@ pub struct ResMetadataStored {
     pub block_number: u32,
     /// 上传的密文的哈希值，由链码计算。明文时应与 `hash` 有相同值。
     pub hash_stored: String,
-    /// 上传的密文的大小，由链码确定。时文时应与 `size` 有相同值。
+    /// 上传的密文的大小，由链码确定。明文时应与 `size` 有相同值。
     pub size_stored: u64,
 }
 
