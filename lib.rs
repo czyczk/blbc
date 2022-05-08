@@ -16,11 +16,14 @@ mod blbc {
     use ink_prelude::string::String;
     use ink_prelude::vec::Vec;
     use ink_storage::{traits::SpreadAllocate, Mapping};
+    use crate::model::data::IDsWithPagination;
 
 
     #[ink(storage)]
     #[derive(SpreadAllocate)]
     pub struct Blbc {
+        /// 存储所有的资源 ID
+        pub resource_ids: Vec<String>,
         /// 存储通过资源 ID 可以找到的链上资源，资源内容是字节数组
         pub res_map: Mapping<String, Vec<u8>>,
         /// 存储通过资源 ID 可以找到的资源元数据
@@ -30,6 +33,7 @@ mod blbc {
         /// 存储通过资源 ID 可以找到的策略
         pub res_policy_map: Mapping<String, String>,
     }
+
 
     #[ink(event)]
     pub struct ResourceCreated {
@@ -135,6 +139,17 @@ mod blbc {
                 .ok_or::<String>(error_code::CODE_NOT_FOUND.into())?;
 
             return Ok(policy_bytes);
+        }
+
+        #[ink(message)]
+        pub fn list_resource_ids_by_creator(
+            &mut self,
+            data_type: String,
+            is_desc: bool,
+            page_size: u64,
+            bookmark: String,
+        ) -> Result<IDsWithPagination, String> {
+            data::list_resource_ids_by_creator(self, data_type, is_desc, page_size, bookmark)
         }
     }
 
@@ -530,6 +545,28 @@ mod blbc {
             // Invoke with a non existent resource ID and expect the response status to be ERROR
             assert!(blbc.get_policy(non_existent_resource_id).is_err());
         }
+
+        // 此函数可以用来测试除 creator 以外的各种边界条件
+        // #[ink::test]
+        // pub fn test_list_resource_ids_by_creator() {
+        //     // Prepare
+        //     let mut blbc = Blbc::default();
+        //     let sample_offchain_data1 = get_sample_offchain_data1();
+        //     let sample_offchain_data2 = get_sample_offchain_data2();
+        //     let sample_plain_data1 = get_sample_plain_data1();
+        //     let sample_plain_data2 = get_sample_plain_data2();
+        //     let sample_encrypted_data2 = get_sample_encrypted_data2();
+        //     let sample_encrypted_data1 = get_sample_encrypted_data1();
+        //
+        //     // Invoke with sample_encrypted_data1 and expect the return value to be Ok()
+        //     assert!(blbc.create_offchain_data(sample_offchain_data1, None).is_ok());
+        //     assert!(blbc.create_encrypted_data(sample_encrypted_data2, None).is_ok());
+        //     assert!(blbc.create_offchain_data(sample_offchain_data2, None).is_ok());
+        //     assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+        //     assert!(blbc.create_plain_data(sample_plain_data2, None).is_ok());
+        //     assert!(blbc.create_plain_data(sample_plain_data1, None).is_ok());
+        //     assert!(blbc.list_resource_ids_by_creator("document".into(), false, 1, "201".into()).is_ok());
+        // }
 
 
         const DATA1: &str = "data1";

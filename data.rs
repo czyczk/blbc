@@ -1,5 +1,6 @@
 use core::iter::FromIterator;
 use ink::codegen::{EmitEvent, Env};
+use ink_env::AccountId;
 use ink_env::hash::Sha2x256;
 use ink_lang as ink;
 use ink_prelude::format;
@@ -9,7 +10,7 @@ use ink_prelude::vec::Vec;
 use crate::{
     blbc::{Blbc, ResourceCreated, EVENT_ID_FOR_RETURNED_VALUE},
     model::{
-        data::{PlainData, EncryptedData, OffchainData, ResMetadataStored},
+        data::{PlainData, EncryptedData, OffchainData, ResMetadataStored, IDsWithPagination},
         datetime::ScaleDateTimeLocal,
     },
 };
@@ -75,6 +76,7 @@ pub fn create_plain_data(
 
     // 存储数据
     ink_env::debug_println!("正在存储数据");
+    ctx.resource_ids.push(resource_id.clone());
     ctx.res_map.insert(resource_id.clone(), &data_bytes);
     ctx.res_metadata_map
         .insert(resource_id.clone(), &metadata_stored);
@@ -150,9 +152,10 @@ pub fn create_encrypted_data(
 
     // 存储数据
     ink_env::debug_println!("正在存储数据");
+    ctx.resource_ids.push(resource_id.clone());
     ctx.res_map.insert(resource_id.clone(), &data_bytes);
-    ctx.res_key_map.insert(resource_id.clone(),&key_decoded);
-    ctx.res_policy_map.insert(resource_id.clone(),&encrypted_data.policy);
+    ctx.res_key_map.insert(resource_id.clone(), &key_decoded);
+    ctx.res_policy_map.insert(resource_id.clone(), &encrypted_data.policy);
     ctx.res_metadata_map
         .insert(resource_id.clone(), &metadata_stored);
 
@@ -228,6 +231,7 @@ pub fn create_offchain_data(
 
     // 存储数据
     ink_env::debug_println!("正在存储数据");
+    ctx.resource_ids.push(resource_id.clone());
     ctx.res_map.insert(resource_id.clone(), &offchain_data.cid.clone().into_bytes());
     ctx.res_key_map.insert(resource_id.clone(), &key_decoded);
     ctx.res_policy_map.insert(resource_id.clone(), &offchain_data.policy);
@@ -249,6 +253,85 @@ pub fn create_offchain_data(
     }
 
     return Ok(());
+}
+
+pub fn list_resource_ids_by_creator(
+    ctx: &mut Blbc,
+    data_type: String,
+    is_desc: bool,
+    page_size: u64,
+    bookmark: String,
+) -> Result<IDsWithPagination, String> {
+    if page_size < 1 {
+        return Err("page_size 应为正整数".into());
+    }
+
+    // 获取当前调用者
+    let creator = ctx.env().caller();
+
+    // 获取全部 resource_id 并排序
+    let mut resource_ids = ctx.resource_ids.clone();
+    if is_desc {
+        resource_ids.sort_unstable_by(|a, b| b.cmp(a));
+    } else {
+        resource_ids.sort_unstable();
+    }
+
+    // 遍历并收集结果
+    let mut eligible_ids: Vec<String> = Vec::new();
+    let mut i = 0;
+    let mut is_found = false;
+    // 书签为空表示从头查起
+    if bookmark.eq("") {
+        is_found = true;
+    }
+    for resource_id in resource_ids {
+        if is_found {
+            let metadata = match ctx.get_metadata(resource_id.clone()) {
+                Ok(b) => b,
+                Err(msg) => return Err(msg)
+            };
+            let is_eligible_resource_id = match is_eligible(metadata, creator, data_type.clone()) {
+                Ok(b) => b,
+                Err(msg) => return Err(msg)
+            };
+            if is_eligible_resource_id {
+                eligible_ids.push(resource_id.clone());
+            }
+            i += 1;
+        }
+        if i >= page_size {
+            break;
+        }
+        if resource_id.eq(&bookmark) {
+            is_found = true;
+        }
+    }
+
+    // 准备返回值
+    let last_eligible_id = match eligible_ids.last() {
+        None => { bookmark.clone() }
+        Some(v) => { (*v).clone() }
+    };
+    let pagination_result = IDsWithPagination { ids: eligible_ids, bookmark: last_eligible_id };
+
+    //panic!("{:#?}", pagination_result);
+    return Ok(pagination_result);
+}
+
+// 按调用者、data_type 筛选
+pub fn is_eligible(metadata: ResMetadataStored, creator: AccountId, data_type: String) -> Result<bool, String> {
+    let creator_to_be_checked = metadata.creator;
+    let data_type_to_be_checked = match metadata.extensions.get("dataType") {
+        None => { return Err("metadata 中找不到 dataType 属性".into()); }
+        Some(s) => { s }
+    };
+
+    return if creator_to_be_checked.eq(&creator) && data_type_to_be_checked.eq(&data_type) {
+        Ok(true)
+    } else {
+        Ok(false)
+    }
 }
 
 // fn get_datetime_local_from_timestamp(timestamp: u64) -> DateTime<Local> {

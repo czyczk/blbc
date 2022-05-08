@@ -1,6 +1,7 @@
 // 使用 `alloc` 是因为似乎不能在嵌套类中使用 `HashMap`（`Encode` trait 不满足）。作为权变，使用 `alloc::collections::BTreeMap`。
 extern crate alloc;
 use alloc::collections::BTreeMap;
+use ink_prelude::vec::Vec;
 use ink_env::AccountId;
 use ink_prelude::string::String;
 use ink_storage::traits::{PackedLayout, SpreadLayout};
@@ -96,4 +97,14 @@ pub struct OffchainData {
     pub key: String,
     /// 策略
     pub policy: String,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Decode, Encode, PackedLayout, SpreadLayout)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+/// IDsWithPagination 结构体用于封装 ID 列表和书签，其中 ID 列表可用于资源 ID、授权会话 ID 等。
+pub struct IDsWithPagination {
+    // ID 列表
+    pub ids: Vec<String>,
+    // 标识分页终点的书签
+    pub bookmark: String,
 }
