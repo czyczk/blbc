@@ -12,11 +12,11 @@ mod blbc {
     use crate::{
         data, error_code,
         model::data::{PlainData, EncryptedData, OffchainData, ResMetadataStored},
+        model::query::IDsWithPagination
     };
     use ink_prelude::string::String;
     use ink_prelude::vec::Vec;
     use ink_storage::{traits::SpreadAllocate, Mapping};
-    use crate::model::data::IDsWithPagination;
 
 
     #[ink(storage)]

@@ -10,8 +10,9 @@ use ink_prelude::vec::Vec;
 use crate::{
     blbc::{Blbc, ResourceCreated, EVENT_ID_FOR_RETURNED_VALUE},
     model::{
-        data::{PlainData, EncryptedData, OffchainData, ResMetadataStored, IDsWithPagination},
+        data::{PlainData, EncryptedData, OffchainData, ResMetadataStored},
         datetime::ScaleDateTimeLocal,
+        query::IDsWithPagination,
     },
 };
 
