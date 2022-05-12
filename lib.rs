@@ -558,7 +558,7 @@ mod blbc {
 
         //此函数可以用来测试除 creator 以外的各种边界条件
         // #[ink::test]
-        // pub fn test_list_resource_ids_by_creator() {
+        // fn test_list_resource_ids_by_creator() {
         //     // Prepare
         //     let mut blbc = Blbc::default();
         //     let sample_offchain_data1 = get_sample_offchain_data1();
@@ -582,7 +582,7 @@ mod blbc {
 
         // 关于时间的查询无法测试，其余查询条件已测试通过
         // #[ink::test]
-        // pub fn test_list_resource_ids_by_conditions() {
+        // fn test_list_resource_ids_by_conditions() {
         //     // Prepare
         //     let mut blbc = Blbc::default();
         //     let sample_offchain_data1 = get_sample_offchain_data1();

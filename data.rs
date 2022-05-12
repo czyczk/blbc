@@ -454,7 +454,7 @@ pub fn list_resource_ids_by_conditions(
     return Ok(pagination_result);
 }
 
-pub fn meet_document_query_conditions(metadata: ResMetadataStored, document_query_conditions: DocumentQueryConditions) -> Result<bool, String> {
+fn meet_document_query_conditions(metadata: ResMetadataStored, document_query_conditions: DocumentQueryConditions) -> Result<bool, String> {
     // 先匹配 common_query_conditions 之外的一系列条件
     match document_query_conditions.document_type {
         None => {}
@@ -596,7 +596,7 @@ pub fn meet_document_query_conditions(metadata: ResMetadataStored, document_quer
     return Ok(true);
 }
 
-pub fn meet_entity_asset_query_conditions(metadata: ResMetadataStored, entity_asset_query_conditions: EntityAssetQueryConditions) -> Result<bool, String> {
+fn meet_entity_asset_query_conditions(metadata: ResMetadataStored, entity_asset_query_conditions: EntityAssetQueryConditions) -> Result<bool, String> {
     // 先匹配 common_query_conditions 之外的一系列条件
     match entity_asset_query_conditions.design_document_id {
         None => {}
@@ -701,7 +701,7 @@ pub fn meet_entity_asset_query_conditions(metadata: ResMetadataStored, entity_as
 }
 
 // 按调用者、data_type 筛选
-pub fn is_eligible(metadata: ResMetadataStored, creator: AccountId, data_type: String) -> Result<bool, String> {
+fn is_eligible(metadata: ResMetadataStored, creator: AccountId, data_type: String) -> Result<bool, String> {
     let creator_to_be_checked = metadata.creator;
     let data_type_to_be_checked = match metadata.extensions.get("dataType") {
         None => { return Err("metadata 中找不到 dataType 属性".into()); }
