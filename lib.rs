@@ -1,5 +1,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+extern crate alloc;
+
 pub mod data;
 pub mod error_code;
 pub mod extension;
@@ -12,11 +14,12 @@ mod blbc {
     use crate::{
         data, error_code,
         model::data::{PlainData, EncryptedData, OffchainData, ResMetadataStored},
-        model::query::IDsWithPagination
+        model::query::IDsWithPagination,
     };
     use ink_prelude::string::String;
     use ink_prelude::vec::Vec;
     use ink_storage::{traits::SpreadAllocate, Mapping};
+    use crate::model::query::QueryConditions;
 
 
     #[ink(storage)]
@@ -147,9 +150,14 @@ mod blbc {
             data_type: String,
             is_desc: bool,
             page_size: u64,
-            bookmark: String,
+            bookmark: Option<String>,
         ) -> Result<IDsWithPagination, String> {
             data::list_resource_ids_by_creator(self, data_type, is_desc, page_size, bookmark)
+        }
+
+        #[ink(message)]
+        pub fn list_resource_ids_by_conditions(&mut self, query_conditions: QueryConditions, page_size: u64) -> Result<IDsWithPagination, String> {
+            data::list_resource_ids_by_conditions(self, query_conditions, page_size)
         }
     }
 
@@ -169,6 +177,8 @@ mod blbc {
         /// Imports `ink_lang` so we can use `#[ink::test]`.
         use ink_lang as ink;
         use sha2::{Digest, Sha256};
+        use crate::model::document::DocumentType;
+        use crate::model::query::{CommonQueryConditions, DocumentQueryConditions, EntityAssetQueryConditions};
 
         #[ink::test]
         fn default_works() {
@@ -546,7 +556,7 @@ mod blbc {
             assert!(blbc.get_policy(non_existent_resource_id).is_err());
         }
 
-        // 此函数可以用来测试除 creator 以外的各种边界条件
+        //此函数可以用来测试除 creator 以外的各种边界条件
         // #[ink::test]
         // pub fn test_list_resource_ids_by_creator() {
         //     // Prepare
@@ -565,7 +575,62 @@ mod blbc {
         //     assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
         //     assert!(blbc.create_plain_data(sample_plain_data2, None).is_ok());
         //     assert!(blbc.create_plain_data(sample_plain_data1, None).is_ok());
-        //     assert!(blbc.list_resource_ids_by_creator("document".into(), false, 1, "201".into()).is_ok());
+        //     assert!(blbc.list_resource_ids_by_creator("documen".into(), false, 9, None).is_ok());
+        //     assert!(blbc.list_resource_ids_by_creator("document".into(), true, 5, Some("201".into())).is_ok());
+        // }
+
+
+        // 关于时间的查询无法测试，其余查询条件已测试通过
+        // #[ink::test]
+        // pub fn test_list_resource_ids_by_conditions() {
+        //     // Prepare
+        //     let mut blbc = Blbc::default();
+        //     let sample_offchain_data1 = get_sample_offchain_data1();
+        //     let sample_offchain_data2 = get_sample_offchain_data2();
+        //     let sample_plain_data1 = get_sample_plain_data1();
+        //     let sample_plain_data2 = get_sample_plain_data2();
+        //     let sample_encrypted_data2 = get_sample_encrypted_data2();
+        //     let sample_encrypted_data1 = get_sample_encrypted_data1();
+        //
+        //     // Invoke with sample_encrypted_data1 and expect the return value to be Ok()
+        //     assert!(blbc.create_offchain_data(sample_offchain_data1, None).is_ok());
+        //     assert!(blbc.create_encrypted_data(sample_encrypted_data2, None).is_ok());
+        //     assert!(blbc.create_offchain_data(sample_offchain_data2, None).is_ok());
+        //     assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+        //     assert!(blbc.create_plain_data(sample_plain_data2, None).is_ok());
+        //     assert!(blbc.create_plain_data(sample_plain_data1, None).is_ok());
+        //
+        //     // let query_conditions1 = QueryConditions::DocumentQueryConditions(DocumentQueryConditions {
+        //     //     common_query_conditions: CommonQueryConditions {
+        //     //         is_desc: false,
+        //     //         resource_id: None,
+        //     //         is_name_exact: None,
+        //     //         name: None,
+        //     //         is_time_exact: None,
+        //     //         time: None,
+        //     //         time_after_inclusive: None,
+        //     //         time_before_exclusive: None,
+        //     //         last_resource_id: Some("".into()),
+        //     //     },
+        //     //     document_type: Some(DocumentType::UsageDocument),
+        //     //     preceding_document_id: None,
+        //     //     head_document_id: Some("1000".into()),
+        //     //     entity_asset_id: None,
+        //     // });
+        //     // assert!(blbc.list_resource_ids_by_conditions(query_conditions1, 88).is_ok());
+        //     let query_conditions2 = QueryConditions::EntityAssetQueryConditions(EntityAssetQueryConditions{
+        //         common_query_conditions: CommonQueryConditions {
+        //         is_desc: true,
+        //         resource_id: None,
+        //         is_name_exact: None,
+        //         name: None,
+        //         is_time_exact: None,
+        //         time: None,
+        //         time_after_inclusive: None,
+        //         time_before_exclusive: None,
+        //         last_resource_id: Some("201".into())
+        //     }, design_document_id: Some("101".into()) });
+        //     assert!(blbc.list_resource_ids_by_conditions(query_conditions2, 9).is_ok());
         // }
 
 
@@ -586,6 +651,9 @@ mod blbc {
             let extension_map: BTreeMap<String, String> = BTreeMap::from([
                 ("dataType".into(), "document".into()),
                 ("name".into(), "Sample PlainData 1".into()),
+                ("documentType".into(), DocumentType::DesignDocument.into()),
+                ("headDocumentId".into(), "1000".into()),
+                ("designDocumentId".into(), "101".into())
             ]);
 
             return PlainData {
@@ -613,6 +681,9 @@ mod blbc {
             let extension_map: BTreeMap<String, String> = BTreeMap::from([
                 ("dataType".into(), "document".into()),
                 ("name".into(), "示例明文数据2".into()),
+                ("documentType".into(), DocumentType::TransferDocument.into()),
+                ("headDocumentId".into(), "1000".into()),
+                ("designDocumentId".into(), "101".into())
             ]);
 
             return PlainData {
@@ -640,6 +711,9 @@ mod blbc {
             let extension_map: BTreeMap<String, String> = BTreeMap::from([
                 ("dataType".into(), "document".into()),
                 ("name".into(), "Sample Encrypted Data 1".into()),
+                ("documentType".into(), DocumentType::UsageDocument.into()),
+                ("headDocumentId".into(), "1000".into()),
+                ("designDocumentId".into(), "101".into())
             ]);
 
 
@@ -671,6 +745,9 @@ mod blbc {
             let extension_map: BTreeMap<String, String> = BTreeMap::from([
                 ("dataType".into(), "document".into()),
                 ("name".into(), "示例加密数据2".into()),
+                ("documentType".into(), DocumentType::UsageDocument.into()),
+                ("headDocumentId".into(), "1000".into()),
+                ("designDocumentId".into(), "101".into())
             ]);
 
 
@@ -701,6 +778,9 @@ mod blbc {
             let extension_map: BTreeMap<String, String> = BTreeMap::from([
                 ("dataType".into(), "document".into()),
                 ("name".into(), "Sample Offchain Data 1".into()),
+                ("documentType".into(), DocumentType::RepairDocument.into()),
+                ("headDocumentId".into(), "1000".into()),
+                ("designDocumentId".into(), "101".into())
             ]);
 
             return OffchainData {
@@ -729,6 +809,9 @@ mod blbc {
             let extension_map: BTreeMap<String, String> = BTreeMap::from([
                 ("dataType".into(), "document".into()),
                 ("name".into(), "示例链下数据2".into()),
+                ("documentType".into(), DocumentType::ProductionDocument.into()),
+                ("headDocumentId".into(), "10001".into()),
+                ("designDocumentId".into(), "101".into())
             ]);
 
             return OffchainData {

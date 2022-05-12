@@ -15,6 +15,7 @@ use crate::{
         query::IDsWithPagination,
     },
 };
+use crate::model::query::{DocumentQueryConditions, EntityAssetQueryConditions, QueryConditions};
 
 pub fn create_plain_data(
     ctx: &mut Blbc,
@@ -261,7 +262,7 @@ pub fn list_resource_ids_by_creator(
     data_type: String,
     is_desc: bool,
     page_size: u64,
-    bookmark: String,
+    bookmark: Option<String>,
 ) -> Result<IDsWithPagination, String> {
     if page_size < 1 {
         return Err("page_size 应为正整数".into());
@@ -280,14 +281,24 @@ pub fn list_resource_ids_by_creator(
 
     // 遍历并收集结果
     let mut eligible_ids: Vec<String> = Vec::new();
-    let mut i = 0;
-    let mut is_found = false;
+    let mut eligible_ids_num = 0;
+    let mut bookmark_is_found = false;
+    let bookmark_string: String;
     // 书签为空表示从头查起
-    if bookmark.eq("") {
-        is_found = true;
+    match bookmark {
+        None => {
+            bookmark_string = "".into();
+            bookmark_is_found = true;
+        }
+        Some(s) => {
+            bookmark_string = s.clone();
+            if s.chars().count() == 0 {
+                bookmark_is_found = true;
+            }
+        }
     }
     for resource_id in resource_ids {
-        if is_found {
+        if bookmark_is_found {
             let metadata = match ctx.get_metadata(resource_id.clone()) {
                 Ok(b) => b,
                 Err(msg) => return Err(msg)
@@ -298,26 +309,395 @@ pub fn list_resource_ids_by_creator(
             };
             if is_eligible_resource_id {
                 eligible_ids.push(resource_id.clone());
+                eligible_ids_num += 1;
             }
-            i += 1;
         }
-        if i >= page_size {
+        if eligible_ids_num >= page_size {
             break;
         }
-        if resource_id.eq(&bookmark) {
-            is_found = true;
+        if resource_id.eq(&bookmark_string) {
+            bookmark_is_found = true;
         }
     }
 
     // 准备返回值
     let last_eligible_id = match eligible_ids.last() {
-        None => { bookmark.clone() }
+        None => { bookmark_string.clone() }
         Some(v) => { (*v).clone() }
     };
     let pagination_result = IDsWithPagination { ids: eligible_ids, bookmark: last_eligible_id };
-
+    // 测试时打开注释用来输出信息到命令行
     //panic!("{:#?}", pagination_result);
     return Ok(pagination_result);
+}
+
+pub fn list_resource_ids_by_conditions(
+    ctx: &mut Blbc,
+    query_conditions: QueryConditions,
+    page_size: u64,
+) -> Result<IDsWithPagination, String> {
+    // 检查与准备变量
+    if page_size < 1 {
+        return Err("page_size 应为正整数".into());
+    }
+    let mut resource_ids = ctx.resource_ids.clone();
+    let mut eligible_ids: Vec<String> = Vec::new();
+    let bookmark_string: String;
+
+    // 分别处理 QueryConditions::DocumentQueryConditions 与 QueryConditions::EntityAssetQueryConditions
+    match query_conditions {
+        QueryConditions::DocumentQueryConditions(document_query_conditions) => {
+            // 获取全部 resource_id 并排序
+            if document_query_conditions.common_query_conditions.is_desc {
+                resource_ids.sort_unstable_by(|a, b| b.cmp(a));
+            } else {
+                resource_ids.sort_unstable();
+            }
+
+            // 书签为空表示从头查起
+            let mut bookmark_is_found = false;
+            match &document_query_conditions.common_query_conditions.last_resource_id {
+                None => {
+                    bookmark_string = "".into();
+                    bookmark_is_found = true;
+                }
+                Some(id) => {
+                    bookmark_string = (*id).clone();
+                    if (*id).chars().count() == 0 {
+                        bookmark_is_found = true;
+                    }
+                }
+            }
+
+            // 遍历并收集结果
+            let mut eligible_ids_num = 0;
+            for resource_id in resource_ids {
+                if bookmark_is_found {
+                    let metadata = match ctx.get_metadata(resource_id.clone()) {
+                        Ok(b) => b,
+                        Err(msg) => return Err(msg)
+                    };
+                    match meet_document_query_conditions(metadata, document_query_conditions.clone()) {
+                        Ok(true) => {
+                            eligible_ids.push(resource_id.clone());
+                            eligible_ids_num += 1;
+                        }
+                        Ok(false) => {}
+                        Err(msg) => return Err(msg)
+                    }
+                }
+                if eligible_ids_num >= page_size {
+                    break;
+                }
+                if resource_id.eq(&bookmark_string) {
+                    bookmark_is_found = true;
+                }
+            }
+        }
+        QueryConditions::EntityAssetQueryConditions(entity_asset_query_conditions) => {
+            // 获取全部 resource_id 并排序
+            if entity_asset_query_conditions.common_query_conditions.is_desc {
+                resource_ids.sort_unstable_by(|a, b| b.cmp(a));
+            } else {
+                resource_ids.sort_unstable();
+            }
+
+            // 书签为空表示从头查起
+            let mut bookmark_is_found = false;
+            match &entity_asset_query_conditions.common_query_conditions.last_resource_id {
+                None => {
+                    bookmark_string = "".into();
+                    bookmark_is_found = true;
+                }
+                Some(id) => {
+                    bookmark_string = (*id).clone();
+                    if (*id).chars().count() == 0 {
+                        bookmark_is_found = true;
+                    }
+                }
+            }
+
+            // 遍历并收集结果
+            let mut eligible_ids_num = 0;
+            for resource_id in resource_ids {
+                if bookmark_is_found {
+                    let metadata = match ctx.get_metadata(resource_id.clone()) {
+                        Ok(b) => b,
+                        Err(msg) => return Err(msg)
+                    };
+                    match meet_entity_asset_query_conditions(metadata, entity_asset_query_conditions.clone()) {
+                        Ok(true) => {
+                            eligible_ids.push(resource_id.clone());
+                            eligible_ids_num += 1;
+                        }
+                        Ok(false) => {}
+                        Err(msg) => return Err(msg)
+                    }
+                }
+                if eligible_ids_num >= page_size {
+                    break;
+                }
+                if resource_id.eq(&bookmark_string) {
+                    bookmark_is_found = true;
+                }
+            }
+        }
+    };
+    // 准备返回值
+    let last_eligible_id = match eligible_ids.last() {
+        None => { bookmark_string.clone() }
+        Some(v) => { (*v).clone() }
+    };
+    let pagination_result = IDsWithPagination { ids: eligible_ids, bookmark: last_eligible_id };
+    // 测试时打开注释用来输出信息到命令行
+    //panic!("{:#?}", pagination_result);
+    return Ok(pagination_result);
+}
+
+pub fn meet_document_query_conditions(metadata: ResMetadataStored, document_query_conditions: DocumentQueryConditions) -> Result<bool, String> {
+    // 先匹配 common_query_conditions 之外的一系列条件
+    match document_query_conditions.document_type {
+        None => {}
+        Some(document_type) => {
+            let document_type_to_be_checked = match metadata.extensions.get("documentType") {
+                None => { return Err("metadata 中找不到 documentType 属性".into()); }
+                Some(s) => { s }
+            };
+            let document_type_to_be_checked_string = (*document_type_to_be_checked).clone();
+            let document_type_string: String = document_type.into();
+            if document_type_to_be_checked_string.ne(&document_type_string) {
+                return Ok(false);
+            }
+        }
+    };
+    match document_query_conditions.preceding_document_id {
+        None => {}
+        Some(preceding_document_id) => {
+            let preceding_document_id_to_be_checked = match metadata.extensions.get("precedingDocumentId") {
+                None => { return Err("metadata 中找不到 precedingDocumentId 属性".into()); }
+                Some(s) => { s }
+            };
+            if (*preceding_document_id_to_be_checked).ne(&preceding_document_id) {
+                return Ok(false);
+            }
+        }
+    };
+    match document_query_conditions.head_document_id {
+        None => {}
+        Some(head_document_id) => {
+            let head_document_id_to_be_checked = match metadata.extensions.get("headDocumentId") {
+                None => { return Err("metadata 中找不到 headDocumentId 属性".into()); }
+                Some(s) => { s }
+            };
+            if (*head_document_id_to_be_checked).ne(&head_document_id) {
+                return Ok(false);
+            }
+        }
+    };
+    match document_query_conditions.entity_asset_id {
+        None => {}
+        Some(entity_asset_id) => {
+            let entity_asset_id_to_be_checked = match metadata.extensions.get("entityAssetId") {
+                None => { return Err("metadata 中找不到 entityAssetId 属性".into()); }
+                Some(s) => { s }
+            };
+            if (*entity_asset_id_to_be_checked).ne(&entity_asset_id) {
+                return Ok(false);
+            }
+        }
+    };
+    // 匹配 common_query_conditions 中的一系列条件
+    let common_query_conditions = document_query_conditions.common_query_conditions;
+    match common_query_conditions.resource_id {
+        None => {}
+        Some(resource_id) => {
+            if resource_id.ne(&(metadata.resource_id)) {
+                return Ok(false);
+            }
+        }
+    };
+    match common_query_conditions.is_name_exact {
+        None => {}
+        Some(true) => {
+            // 按精确名称查找的逻辑
+            let name = match common_query_conditions.name {
+                None => { return Err("查询条件缺少 name 字段".into()); }
+                Some(s) => { s }
+            };
+            let name_to_be_checked = match metadata.extensions.get("name") {
+                None => { return Err("metadata 中找不到 name 属性".into()); }
+                Some(s) => { s }
+            };
+            if (*name_to_be_checked).ne(&name) {
+                return Ok(false);
+            }
+        }
+        Some(false) => {
+            // 模糊查找
+            let name = match common_query_conditions.name {
+                None => { return Err("查询条件缺少 name 字段".into()); }
+                Some(s) => { s }
+            };
+            let name_to_be_checked = match metadata.extensions.get("name") {
+                None => { return Err("metadata 中找不到 name 属性".into()); }
+                Some(s) => { s }
+            };
+            if !(*name_to_be_checked).contains(&name) {
+                return Ok(false);
+            }
+        }
+    };
+    match common_query_conditions.is_time_exact {
+        None => {}
+        Some(true) => {
+            // 查找指定时间点
+            let time = match common_query_conditions.time {
+                None => { return Err("查询条件缺少 time 字段".into()); }
+                Some(s) => { s }
+            };
+            let time_to_be_checked = metadata.timestamp;
+            if time.ne(&time_to_be_checked) {
+                return Ok(false);
+            }
+        }
+        Some(false) => {
+            //查找指定时间段: [after, before) 或 [after, 至今]、[起始时间, before)
+            let time_to_be_checked = metadata.timestamp;
+            if common_query_conditions.time_after_inclusive.is_none() && common_query_conditions.time_before_exclusive.is_none() {
+                return Err("time_after_inclusive、time_before_exclusive 至少应有一个不为 None".into());
+            } else if common_query_conditions.time_after_inclusive.is_some() && common_query_conditions.time_before_exclusive.is_some() {
+                let time_after_inclusive = common_query_conditions.time_after_inclusive.unwrap();
+                let time_before_exclusive = common_query_conditions.time_before_exclusive.unwrap();
+                if time_to_be_checked.lt(&time_after_inclusive) || time_to_be_checked.ge(&time_before_exclusive) {
+                    return Ok(false);
+                }
+            } else {
+                // 二者有且仅有之一有值时
+                match common_query_conditions.time_after_inclusive {
+                    None => {}
+                    Some(t) => {
+                        if time_to_be_checked.lt(&t) {
+                            return Ok(false);
+                        }
+                    }
+                };
+                match common_query_conditions.time_before_exclusive {
+                    None => {}
+                    Some(t) => {
+                        if time_to_be_checked.ge(&t) {
+                            return Ok(false);
+                        }
+                    }
+                };
+            }
+        }
+    };
+    // 函数运行到此处尚未返回的表示通过了以上所有筛选
+    return Ok(true);
+}
+
+pub fn meet_entity_asset_query_conditions(metadata: ResMetadataStored, entity_asset_query_conditions: EntityAssetQueryConditions) -> Result<bool, String> {
+    // 先匹配 common_query_conditions 之外的一系列条件
+    match entity_asset_query_conditions.design_document_id {
+        None => {}
+        Some(design_document_id) => {
+            let design_document_id_to_be_checked = match metadata.extensions.get("designDocumentId") {
+                None => { return Err("metadata 中找不到 designDocumentId 属性".into()); }
+                Some(s) => { s }
+            };
+            if (*design_document_id_to_be_checked).ne(&design_document_id) {
+                return Ok(false);
+            }
+        }
+    };
+    // 匹配 common_query_conditions 中的一系列条件
+    let common_query_conditions = entity_asset_query_conditions.common_query_conditions;
+    match common_query_conditions.resource_id {
+        None => {}
+        Some(resource_id) => {
+            if resource_id.ne(&(metadata.resource_id)) {
+                return Ok(false);
+            }
+        }
+    };
+    match common_query_conditions.is_name_exact {
+        None => {}
+        Some(true) => {
+            // 按精确名称查找的逻辑
+            let name = match common_query_conditions.name {
+                None => { return Err("查询条件缺少 name 字段".into()); }
+                Some(s) => { s }
+            };
+            let name_to_be_checked = match metadata.extensions.get("name") {
+                None => { return Err("metadata 中找不到 name 属性".into()); }
+                Some(s) => { s }
+            };
+            if (*name_to_be_checked).ne(&name) {
+                return Ok(false);
+            }
+        }
+        Some(false) => {
+            // 模糊查找
+            let name = match common_query_conditions.name {
+                None => { return Err("查询条件缺少 name 字段".into()); }
+                Some(s) => { s }
+            };
+            let name_to_be_checked = match metadata.extensions.get("name") {
+                None => { return Err("metadata 中找不到 name 属性".into()); }
+                Some(s) => { s }
+            };
+            if !(*name_to_be_checked).contains(&name) {
+                return Ok(false);
+            }
+        }
+    };
+    match common_query_conditions.is_time_exact {
+        None => {}
+        Some(true) => {
+            // 查找指定时间点
+            let time = match common_query_conditions.time {
+                None => { return Err("查询条件缺少 time 字段".into()); }
+                Some(s) => { s }
+            };
+            let time_to_be_checked = metadata.timestamp;
+            if time.ne(&time_to_be_checked) {
+                return Ok(false);
+            }
+        }
+        Some(false) => {
+            //查找指定时间段: [after, before) 或 [after, 至今]、[起始时间, before)
+            let time_to_be_checked = metadata.timestamp;
+            if common_query_conditions.time_after_inclusive.is_none() && common_query_conditions.time_before_exclusive.is_none() {
+                return Err("time_after_inclusive、time_before_exclusive 至少应有一个不为 None".into());
+            } else if common_query_conditions.time_after_inclusive.is_some() && common_query_conditions.time_before_exclusive.is_some() {
+                let time_after_inclusive = common_query_conditions.time_after_inclusive.unwrap();
+                let time_before_exclusive = common_query_conditions.time_before_exclusive.unwrap();
+                if time_to_be_checked.lt(&time_after_inclusive) || time_to_be_checked.ge(&time_before_exclusive) {
+                    return Ok(false);
+                }
+            } else {
+                // 二者有且仅有之一有值时
+                match common_query_conditions.time_after_inclusive {
+                    None => {}
+                    Some(t) => {
+                        if time_to_be_checked.lt(&t) {
+                            return Ok(false);
+                        }
+                    }
+                };
+                match common_query_conditions.time_before_exclusive {
+                    None => {}
+                    Some(t) => {
+                        if time_to_be_checked.ge(&t) {
+                            return Ok(false);
+                        }
+                    }
+                };
+            }
+        }
+    };
+    // 函数运行到此处尚未返回的表示通过了以上所有筛选
+    return Ok(true);
 }
 
 // 按调用者、data_type 筛选
@@ -328,11 +708,11 @@ pub fn is_eligible(metadata: ResMetadataStored, creator: AccountId, data_type: S
         Some(s) => { s }
     };
 
-    return if creator_to_be_checked.eq(&creator) && data_type_to_be_checked.eq(&data_type) {
+    return if creator_to_be_checked.eq(&creator) && (*data_type_to_be_checked).eq(&data_type) {
         Ok(true)
     } else {
         Ok(false)
-    }
+    };
 }
 
 // fn get_datetime_local_from_timestamp(timestamp: u64) -> DateTime<Local> {
