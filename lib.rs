@@ -1,24 +1,24 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 extern crate alloc;
+extern crate core;
 
 pub mod data;
 pub mod error_code;
 pub mod extension;
 pub mod model;
+pub mod auth;
 
 use ink_lang as ink;
 
 #[ink::contract]
 mod blbc {
-    use crate::{
-        data, error_code,
-        model::data::{PlainData, EncryptedData, OffchainData, ResMetadataStored},
-        model::query::IDsWithPagination,
-    };
+    use crate::{auth, data, error_code, model::data::{PlainData, EncryptedData, OffchainData, ResMetadataStored}, model::query::IDsWithPagination};
     use ink_prelude::string::String;
     use ink_prelude::vec::Vec;
     use ink_storage::{traits::SpreadAllocate, Mapping};
+    use crate::model::auth::{AuthRequest, AuthRequestStored, AuthResponse, AuthResponseStored};
+    use crate::model::datetime::ScaleDateTimeLocal;
     use crate::model::query::QueryConditions;
 
 
@@ -27,6 +27,8 @@ mod blbc {
     pub struct Blbc {
         /// 存储所有的资源 ID
         pub resource_ids: Vec<String>,
+        /// 存储所有请求的 auth_session_id
+        pub auth_session_ids: Vec<String>,
         /// 存储通过资源 ID 可以找到的链上资源，资源内容是字节数组
         pub res_map: Mapping<String, Vec<u8>>,
         /// 存储通过资源 ID 可以找到的资源元数据
@@ -35,6 +37,10 @@ mod blbc {
         pub res_key_map: Mapping<String, Vec<u8>>,
         /// 存储通过资源 ID 可以找到的策略
         pub res_policy_map: Mapping<String, String>,
+        /// 存储通过 auth_session_id 可以找到的 AuthRequestStored
+        pub auth_request_map: Mapping<String, AuthRequestStored>,
+        /// 存储通过 auth_session_id 可以找到的 AuthResponseStored
+        pub auth_response_map: Mapping<String, AuthResponseStored>,
     }
 
 
@@ -42,6 +48,12 @@ mod blbc {
     pub struct ResourceCreated {
         pub event_id: String,
         pub resource_id: String,
+    }
+
+    #[ink(event)]
+    pub struct AuthCreated {
+        pub event_id: String,
+        pub auth_session_id: String,
     }
 
     pub const EVENT_ID_FOR_RETURNED_VALUE: &'static str = "~TXRET~";
@@ -158,6 +170,65 @@ mod blbc {
         #[ink(message)]
         pub fn list_resource_ids_by_conditions(&mut self, query_conditions: QueryConditions, page_size: u64) -> Result<IDsWithPagination, String> {
             data::list_resource_ids_by_conditions(self, query_conditions, page_size)
+        }
+
+        #[ink(message)]
+        pub fn create_auth_request(&mut self, auth_session_id: String, auth_request: AuthRequest, event_id: Option<String>) -> Result<(), String> {
+            ink_env::debug_println!("---");
+            ink_env::debug_println!("create_auth_request");
+            auth::create_auth_request(self, auth_session_id, auth_request, event_id)
+        }
+
+        #[ink(message)]
+        pub fn create_auth_response(&mut self, auth_session_id: String, auth_response: AuthResponse, event_id: Option<String>) -> Result<(), String> {
+            ink_env::debug_println!("---");
+            ink_env::debug_println!("create_auth_response");
+            auth::create_auth_response(self, auth_session_id, auth_response, event_id)
+        }
+
+
+        #[ink(message)]
+        pub fn get_auth_request(&self, auth_session_id: String) -> Result<AuthRequestStored, String> {
+            ink_env::debug_println!("---");
+            ink_env::debug_println!("get_auth_request");
+
+            // 读 auth_req 并返回，若未找到则返回 CODE_NOT_FOUND
+            let auth_req = match self.auth_request_map.get(&auth_session_id) {
+                Some(it) => it,
+                None => return Err(error_code::CODE_NOT_FOUND.into()),
+            };
+
+            // 合约现还不支持范型，故不能指定 lifetime，只能把有所有权的东西传出。
+            return Ok(auth_req.clone());
+        }
+
+        #[ink(message)]
+        pub fn get_auth_response(&self, auth_session_id: String) -> Result<AuthResponseStored, String> {
+            ink_env::debug_println!("---");
+            ink_env::debug_println!("get_auth_response");
+
+            // 读 auth_res 并返回，若未找到则返回 CODE_NOT_FOUND
+            let auth_res = match self.auth_response_map.get(&auth_session_id) {
+                Some(it) => it,
+                None => return Err(error_code::CODE_NOT_FOUND.into()),
+            };
+
+            // 合约现还不支持范型，故不能指定 lifetime，只能把有所有权的东西传出。
+            return Ok(auth_res.clone());
+        }
+
+        #[ink(message)]
+        pub fn list_pending_auth_session_ids_by_resource_creator(&mut self, page_size: u32, bookmark: Option<String>) -> Result<IDsWithPagination, String> {
+            ink_env::debug_println!("---");
+            ink_env::debug_println!("list_pending_auth_session_ids_by_resource_creator");
+            auth::list_pending_auth_session_ids_by_resource_creator(self, page_size, bookmark)
+        }
+
+        #[ink(message)]
+        pub fn list_auth_session_ids_by_requestor(&mut self, page_size: u32, bookmark: Option<String>, is_latest_first: bool) -> Result<IDsWithPagination, String> {
+            ink_env::debug_println!("---");
+            ink_env::debug_println!("list_auth_session_ids_by_requestor");
+            auth::list_auth_session_ids_by_requestor(self, page_size, bookmark, is_latest_first)
         }
     }
 
@@ -558,7 +629,7 @@ mod blbc {
 
         //此函数可以用来测试除 creator 以外的各种边界条件
         // #[ink::test]
-        // pub fn test_list_resource_ids_by_creator() {
+        // fn test_list_resource_ids_by_creator() {
         //     // Prepare
         //     let mut blbc = Blbc::default();
         //     let sample_offchain_data1 = get_sample_offchain_data1();
@@ -582,7 +653,7 @@ mod blbc {
 
         // 关于时间的查询无法测试，其余查询条件已测试通过
         // #[ink::test]
-        // pub fn test_list_resource_ids_by_conditions() {
+        // fn test_list_resource_ids_by_conditions() {
         //     // Prepare
         //     let mut blbc = Blbc::default();
         //     let sample_offchain_data1 = get_sample_offchain_data1();
@@ -632,6 +703,163 @@ mod blbc {
         //     }, design_document_id: Some("101".into()) });
         //     assert!(blbc.list_resource_ids_by_conditions(query_conditions2, 9).is_ok());
         // }
+
+        #[ink::test]
+        fn test_create_auth_request_with_encrypted_data() {
+            // 初始化
+            let mut blbc = Blbc::default();
+            // 创建加密文档
+            let auth_session_id: String = "1".into();
+            let sample_encrypted_data1 = get_sample_encrypted_data1();
+            let resource_id = sample_encrypted_data1.metadata.resource_id.clone();
+            assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+            // 创建授权请求
+            let sample_auth_request1 = get_sample_auth_request1(resource_id.clone());
+            assert!(blbc.create_auth_request(auth_session_id.clone(), sample_auth_request1.clone(), None).is_ok());
+            // 验证
+            let auth_request_to_be_checked = match blbc.get_auth_request(auth_session_id.clone()) {
+                Ok(a) => { a }
+                Err(msg) => { panic!("{}", msg) }
+            };
+            assert_eq!(auth_session_id, auth_request_to_be_checked.auth_session_id);
+            assert_eq!(resource_id, auth_request_to_be_checked.resource_id);
+            assert_eq!(sample_auth_request1.extensions, auth_request_to_be_checked.extensions);
+        }
+
+        #[ink::test]
+        fn test_create_auth_request_with_offchain_data() {
+            // 初始化
+            let mut blbc = Blbc::default();
+            // 创建链下数据
+            let auth_session_id: String = "1".into();
+            let sample_offchain_data1 = get_sample_offchain_data1();
+            let resource_id = sample_offchain_data1.metadata.resource_id.clone();
+            assert!(blbc.create_offchain_data(sample_offchain_data1, None).is_ok());
+            // 创建授权请求
+            let sample_auth_request1 = get_sample_auth_request1(resource_id.clone());
+            assert!(blbc.create_auth_request(auth_session_id.clone(), sample_auth_request1.clone(), None).is_ok());
+            // 验证
+            let auth_request_to_be_checked = match blbc.get_auth_request(auth_session_id.clone()) {
+                Ok(a) => { a }
+                Err(msg) => { panic!("{}", msg) }
+            };
+            assert_eq!(auth_session_id, auth_request_to_be_checked.auth_session_id);
+            assert_eq!(resource_id, auth_request_to_be_checked.resource_id);
+            assert_eq!(sample_auth_request1.extensions, auth_request_to_be_checked.extensions);
+        }
+
+        #[ink::test]
+        fn test_create_auth_request_with_plain_data() {
+            // 初始化
+            let mut blbc = Blbc::default();
+            // 创建明文文档
+            let auth_session_id: String = "1".into();
+            let sample_plain_data1 = get_sample_plain_data1();
+            let resource_id = sample_plain_data1.metadata.resource_id.clone();
+            assert!(blbc.create_plain_data(sample_plain_data1, None).is_ok());
+            // 创建授权请求
+            let sample_auth_request1 = get_sample_auth_request1(resource_id.clone());
+            // 期待状态为 ERROR
+            assert!(blbc.create_auth_request(auth_session_id, sample_auth_request1.clone(), None).is_err());
+        }
+
+        #[ink::test]
+        fn test_create_auth_request_with_non_existent_id() {
+            // Prepare
+            let mut blbc = Blbc::default();
+            let auth_session_id: String = "1".into();
+            let sample_auth_request1 = get_sample_auth_request1("NON_EXISTENT_RESOURCE_ID".into());
+            // 期待状态为 ERROR
+            assert!(blbc.create_auth_request(auth_session_id, sample_auth_request1.clone(), None).is_err());
+        }
+
+        #[ink::test]
+        fn test_create_auth_response_with_normal_process() {
+            // 初始化
+            let mut blbc = Blbc::default();
+            // user1 创建加密数据
+            let auth_session_id: String = "1".into();
+            let sample_encrypted_data = get_sample_encrypted_data1();
+            let resource_id = sample_encrypted_data.metadata.resource_id.clone();
+            assert!(blbc.create_encrypted_data(sample_encrypted_data, None).is_ok());
+            // user1 创建授权请求
+            let sample_auth_request1 = get_sample_auth_request1(resource_id.clone());
+            assert!(blbc.create_auth_request(auth_session_id.clone(), sample_auth_request1.clone(), None).is_ok());
+            // user1 创建授权批复
+            let sample_auth_response1 = get_sample_auth_response1(resource_id.clone());
+            assert!(blbc.create_auth_response(auth_session_id.clone(), sample_auth_response1.clone(), None).is_ok());
+            // 验证
+            let auth_response_to_be_checked = match blbc.get_auth_response(auth_session_id.clone()) {
+                Ok(a) => { a }
+                Err(msg) => { panic!("{}", msg) }
+            };
+            assert_eq!(auth_session_id, auth_response_to_be_checked.auth_session_id);
+            assert_eq!(sample_auth_response1.result, auth_response_to_be_checked.result);
+        }
+
+
+        #[ink::test]
+        fn test_create_auth_response_twice() {
+            // 初始化
+            let mut blbc = Blbc::default();
+            // user1 创建加密数据
+            let auth_session_id: String = "1".into();
+            let sample_encrypted_data = get_sample_encrypted_data1();
+            let resource_id = sample_encrypted_data.metadata.resource_id.clone();
+            assert!(blbc.create_encrypted_data(sample_encrypted_data, None).is_ok());
+            // user1 创建授权请求
+            let sample_auth_request1 = get_sample_auth_request1(resource_id.clone());
+            assert!(blbc.create_auth_request(auth_session_id.clone(), sample_auth_request1.clone(), None).is_ok());
+            // user1 创建授权批复
+            let sample_auth_response1 = get_sample_auth_response1(resource_id.clone());
+            assert!(blbc.create_auth_response(auth_session_id.clone(), sample_auth_response1.clone(), None).is_ok());
+            // user1 再次创建授权批复, 期待状态为 ERR
+            assert!(blbc.create_auth_response(auth_session_id.clone(), sample_auth_response1, None).is_err());
+        }
+
+        #[ink::test]
+        fn test_create_auth_response_with_non_existent_session_id() {
+            // 初始化
+            let mut blbc = Blbc::default();
+            // user1 创建加密数据
+            let auth_session_id: String = "1".into();
+            let sample_encrypted_data = get_sample_encrypted_data1();
+            let resource_id = sample_encrypted_data.metadata.resource_id.clone();
+            assert!(blbc.create_encrypted_data(sample_encrypted_data, None).is_ok());
+            // user1 直接创建授权批复，期待状态为 ERR
+            let sample_auth_response1 = get_sample_auth_response1(resource_id.clone());
+            assert!(blbc.create_auth_response(auth_session_id, sample_auth_response1.clone(), None).is_err());
+        }
+
+        #[ink::test]
+        fn test_get_auth_request_with_normal_parameters() {
+            // 初始化
+            let mut blbc = Blbc::default();
+            // user1 创建加密数据
+            let auth_session_id: String = "1".into();
+            let sample_encrypted_data = get_sample_encrypted_data1();
+            let resource_id = sample_encrypted_data.metadata.resource_id.clone();
+            assert!(blbc.create_encrypted_data(sample_encrypted_data, None).is_ok());
+            // user1 创建授权请求
+            let sample_auth_request1 = get_sample_auth_request1(resource_id.clone());
+            assert!(blbc.create_auth_request(auth_session_id.clone(), sample_auth_request1.clone(), None).is_ok());
+            // 验证
+            let auth_request_to_be_checked = match blbc.get_auth_request(auth_session_id.clone()) {
+                Ok(a) => { a }
+                Err(msg) => { panic!("{}", msg) }
+            };
+            assert_eq!(auth_session_id, auth_request_to_be_checked.auth_session_id);
+            assert_eq!(sample_auth_request1.resource_id, auth_request_to_be_checked.resource_id);
+            assert_eq!(sample_auth_request1.extensions, auth_request_to_be_checked.extensions);
+        }
+
+        #[ink::test]
+        fn test_get_auth_request_with_non_existent_session_id() {
+            // 初始化
+            let mut blbc = Blbc::default();
+            // 直接调用，期待状态为 ERROR 且错误内容为 codeNotFound
+            assert_eq!(Err(error_code::CODE_NOT_FOUND.into()),blbc.get_auth_request("01".into()));
+        }
 
 
         const DATA1: &str = "data1";
@@ -825,6 +1053,55 @@ mod blbc {
                 cid: "654321".into(),
                 key: base64::encode("123456".as_bytes()),
                 policy: "Encryption strategy".into(),
+            };
+        }
+
+        fn get_sample_auth_request1(resource_id: String) -> AuthRequest {
+            let extension_map: BTreeMap<String, String> = BTreeMap::from([
+                ("dataType".into(), "authRequest".into()),
+                ("name".into(), "sampleAuthRequest1".into())
+            ]);
+
+            return AuthRequest {
+                resource_id,
+                extensions: extension_map,
+            };
+        }
+
+        fn get_sample_auth_request2(resource_id: String) -> AuthRequest {
+            let extension_map: BTreeMap<String, String> = BTreeMap::from([
+                ("dataType".into(), "authRequest".into()),
+                ("name".into(), "sampleAuthRequest2".into())
+            ]);
+
+            return AuthRequest {
+                resource_id,
+                extensions: extension_map,
+            };
+        }
+
+        fn get_sample_auth_response1(resource_id: String) -> AuthResponse {
+            let extension_map: BTreeMap<String, String> = BTreeMap::from([
+                ("dataType".into(), "authResponse".into())
+            ]);
+
+            return AuthResponse {
+                auth_session_id: "1".into(),
+                extensions: extension_map,
+                result: true,
+            };
+        }
+
+
+        fn get_sample_auth_response2(resource_id: String) -> AuthResponse {
+            let extension_map: BTreeMap<String, String> = BTreeMap::from([
+                ("dataType".into(), "authResponse".into())
+            ]);
+
+            return AuthResponse {
+                auth_session_id: "2".into(),
+                extensions: extension_map,
+                result: false,
             };
         }
     }

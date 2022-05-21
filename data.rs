@@ -78,10 +78,10 @@ pub fn create_plain_data(
 
     // 存储数据
     ink_env::debug_println!("正在存储数据");
-    ctx.resource_ids.push(resource_id.clone());
     ctx.res_map.insert(resource_id.clone(), &data_bytes);
     ctx.res_metadata_map
         .insert(resource_id.clone(), &metadata_stored);
+    ctx.resource_ids.push(resource_id.clone());
 
     // 通过事件返回值
     ctx.env().emit_event(ResourceCreated {
@@ -154,13 +154,12 @@ pub fn create_encrypted_data(
 
     // 存储数据
     ink_env::debug_println!("正在存储数据");
-    ctx.resource_ids.push(resource_id.clone());
     ctx.res_map.insert(resource_id.clone(), &data_bytes);
     ctx.res_key_map.insert(resource_id.clone(), &key_decoded);
     ctx.res_policy_map.insert(resource_id.clone(), &encrypted_data.policy);
     ctx.res_metadata_map
         .insert(resource_id.clone(), &metadata_stored);
-
+    ctx.resource_ids.push(resource_id.clone());
 
     // 通过事件返回值
     ctx.env().emit_event(ResourceCreated {
@@ -233,13 +232,12 @@ pub fn create_offchain_data(
 
     // 存储数据
     ink_env::debug_println!("正在存储数据");
-    ctx.resource_ids.push(resource_id.clone());
     ctx.res_map.insert(resource_id.clone(), &offchain_data.cid.clone().into_bytes());
     ctx.res_key_map.insert(resource_id.clone(), &key_decoded);
     ctx.res_policy_map.insert(resource_id.clone(), &offchain_data.policy);
     ctx.res_metadata_map
         .insert(resource_id.clone(), &metadata_stored);
-
+    ctx.resource_ids.push(resource_id.clone());
 
     // 通过事件返回值
     ctx.env().emit_event(ResourceCreated {
@@ -454,7 +452,7 @@ pub fn list_resource_ids_by_conditions(
     return Ok(pagination_result);
 }
 
-pub fn meet_document_query_conditions(metadata: ResMetadataStored, document_query_conditions: DocumentQueryConditions) -> Result<bool, String> {
+fn meet_document_query_conditions(metadata: ResMetadataStored, document_query_conditions: DocumentQueryConditions) -> Result<bool, String> {
     // 先匹配 common_query_conditions 之外的一系列条件
     match document_query_conditions.document_type {
         None => {}
@@ -596,7 +594,7 @@ pub fn meet_document_query_conditions(metadata: ResMetadataStored, document_quer
     return Ok(true);
 }
 
-pub fn meet_entity_asset_query_conditions(metadata: ResMetadataStored, entity_asset_query_conditions: EntityAssetQueryConditions) -> Result<bool, String> {
+fn meet_entity_asset_query_conditions(metadata: ResMetadataStored, entity_asset_query_conditions: EntityAssetQueryConditions) -> Result<bool, String> {
     // 先匹配 common_query_conditions 之外的一系列条件
     match entity_asset_query_conditions.design_document_id {
         None => {}
@@ -701,7 +699,7 @@ pub fn meet_entity_asset_query_conditions(metadata: ResMetadataStored, entity_as
 }
 
 // 按调用者、data_type 筛选
-pub fn is_eligible(metadata: ResMetadataStored, creator: AccountId, data_type: String) -> Result<bool, String> {
+fn is_eligible(metadata: ResMetadataStored, creator: AccountId, data_type: String) -> Result<bool, String> {
     let creator_to_be_checked = metadata.creator;
     let data_type_to_be_checked = match metadata.extensions.get("dataType") {
         None => { return Err("metadata 中找不到 dataType 属性".into()); }
