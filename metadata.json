@@ -1,8 +1,8 @@
 {
   "source": {
-    "hash": "0x5b82c0d6188a14a6b3a350f07b2d3641cd053c901a390c381d40777f2c9a9416",
-    "language": "ink! 3.0.1",
-    "compiler": "rustc 1.62.0-nightly"
+    "hash": "0x9bdcc14047d47356f1fe265edaa4b940b65e9fe060dc282ed9280b3acd7939cb",
+    "language": "ink! 3.1.0",
+    "compiler": "rustc 1.63.0-nightly"
   },
   "contract": {
     "name": "blbc",
@@ -62,7 +62,7 @@
                 "displayName": [
                   "PlainData"
                 ],
-                "type": 16
+                "type": 18
               }
             },
             {
@@ -71,7 +71,7 @@
                 "displayName": [
                   "Option"
                 ],
-                "type": 18
+                "type": 20
               }
             }
           ],
@@ -83,9 +83,75 @@
             "displayName": [
               "Result"
             ],
-            "type": 19
+            "type": 21
           },
           "selector": "0x86a9e072"
+        },
+        {
+          "args": [
+            {
+              "label": "encrypted_data",
+              "type": {
+                "displayName": [
+                  "EncryptedData"
+                ],
+                "type": 23
+              }
+            },
+            {
+              "label": "event_id",
+              "type": {
+                "displayName": [
+                  "Option"
+                ],
+                "type": 20
+              }
+            }
+          ],
+          "docs": [],
+          "label": "create_encrypted_data",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 21
+          },
+          "selector": "0x2ce20d00"
+        },
+        {
+          "args": [
+            {
+              "label": "offchain_data",
+              "type": {
+                "displayName": [
+                  "OffchainData"
+                ],
+                "type": 24
+              }
+            },
+            {
+              "label": "event_id",
+              "type": {
+                "displayName": [
+                  "Option"
+                ],
+                "type": 20
+              }
+            }
+          ],
+          "docs": [],
+          "label": "create_offchain_data",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 21
+          },
+          "selector": "0xde9ab1cc"
         },
         {
           "args": [
@@ -107,7 +173,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 21
+            "type": 25
           },
           "selector": "0x928198d3"
         },
@@ -131,9 +197,141 @@
             "displayName": [
               "Result"
             ],
-            "type": 22
+            "type": 26
           },
           "selector": "0x7eb2815a"
+        },
+        {
+          "args": [
+            {
+              "label": "resource_id",
+              "type": {
+                "displayName": [
+                  "String"
+                ],
+                "type": 1
+              }
+            }
+          ],
+          "docs": [],
+          "label": "get_key",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 26
+          },
+          "selector": "0xb9033c7a"
+        },
+        {
+          "args": [
+            {
+              "label": "resource_id",
+              "type": {
+                "displayName": [
+                  "String"
+                ],
+                "type": 1
+              }
+            }
+          ],
+          "docs": [],
+          "label": "get_policy",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 26
+          },
+          "selector": "0x5e44bbfe"
+        },
+        {
+          "args": [
+            {
+              "label": "data_type",
+              "type": {
+                "displayName": [
+                  "String"
+                ],
+                "type": 1
+              }
+            },
+            {
+              "label": "is_desc",
+              "type": {
+                "displayName": [
+                  "bool"
+                ],
+                "type": 27
+              }
+            },
+            {
+              "label": "page_size",
+              "type": {
+                "displayName": [
+                  "u64"
+                ],
+                "type": 10
+              }
+            },
+            {
+              "label": "bookmark",
+              "type": {
+                "displayName": [
+                  "Option"
+                ],
+                "type": 20
+              }
+            }
+          ],
+          "docs": [],
+          "label": "list_resource_ids_by_creator",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 28
+          },
+          "selector": "0x28c92798"
+        },
+        {
+          "args": [
+            {
+              "label": "query_conditions",
+              "type": {
+                "displayName": [
+                  "QueryConditions"
+                ],
+                "type": 30
+              }
+            },
+            {
+              "label": "page_size",
+              "type": {
+                "displayName": [
+                  "u64"
+                ],
+                "type": 10
+              }
+            }
+          ],
+          "docs": [],
+          "label": "list_resource_ids_by_conditions",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 28
+          },
+          "selector": "0x8baad8d1"
         }
       ]
     },
@@ -147,16 +345,43 @@
                 "ty": 0
               }
             },
-            "name": "res_map"
+            "name": "resource_ids"
           },
           {
             "layout": {
               "cell": {
                 "key": "0x0100000000000000000000000000000000000000000000000000000000000000",
-                "ty": 6
+                "ty": 2
+              }
+            },
+            "name": "res_map"
+          },
+          {
+            "layout": {
+              "cell": {
+                "key": "0x0200000000000000000000000000000000000000000000000000000000000000",
+                "ty": 7
               }
             },
             "name": "res_metadata_map"
+          },
+          {
+            "layout": {
+              "cell": {
+                "key": "0x0300000000000000000000000000000000000000000000000000000000000000",
+                "ty": 2
+              }
+            },
+            "name": "res_key_map"
+          },
+          {
+            "layout": {
+              "cell": {
+                "key": "0x0400000000000000000000000000000000000000000000000000000000000000",
+                "ty": 17
+              }
+            },
+            "name": "res_policy_map"
           }
         ]
       }
@@ -166,32 +391,10 @@
         "id": 0,
         "type": {
           "def": {
-            "composite": {
-              "fields": [
-                {
-                  "name": "offset_key",
-                  "type": 4,
-                  "typeName": "Key"
-                }
-              ]
-            }
-          },
-          "params": [
-            {
-              "name": "K",
+            "sequence": {
               "type": 1
-            },
-            {
-              "name": "V",
-              "type": 2
             }
-          ],
-          "path": [
-            "ink_storage",
-            "lazy",
-            "mapping",
-            "Mapping"
-          ]
+          }
         }
       },
       {
@@ -206,59 +409,11 @@
         "id": 2,
         "type": {
           "def": {
-            "sequence": {
-              "type": 3
-            }
-          }
-        }
-      },
-      {
-        "id": 3,
-        "type": {
-          "def": {
-            "primitive": "u8"
-          }
-        }
-      },
-      {
-        "id": 4,
-        "type": {
-          "def": {
-            "composite": {
-              "fields": [
-                {
-                  "type": 5,
-                  "typeName": "[u8; 32]"
-                }
-              ]
-            }
-          },
-          "path": [
-            "ink_primitives",
-            "Key"
-          ]
-        }
-      },
-      {
-        "id": 5,
-        "type": {
-          "def": {
-            "array": {
-              "len": 32,
-              "type": 3
-            }
-          }
-        }
-      },
-      {
-        "id": 6,
-        "type": {
-          "def": {
             "composite": {
               "fields": [
                 {
                   "name": "offset_key",
-                  "type": 4,
+                  "type": 5,
                   "typeName": "Key"
                 }
               ]
@@ -271,7 +426,7 @@
             },
             {
               "name": "V",
-              "type": 7
+              "type": 3
             }
           ],
           "path": [
@@ -283,14 +438,94 @@
         }
       },
       {
+        "id": 3,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 4
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "type": {
+          "def": {
+            "primitive": "u8"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "type": 6,
+                  "typeName": "[u8; 32]"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ink_primitives",
+            "Key"
+          ]
+        }
+      },
+      {
+        "id": 6,
+        "type": {
+          "def": {
+            "array": {
+              "len": 32,
+              "type": 4
+            }
+          }
+        }
+      },
+      {
         "id": 7,
         "type": {
           "def": {
             "composite": {
               "fields": [
                 {
+                  "name": "offset_key",
+                  "type": 5,
+                  "typeName": "Key"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "K",
+              "type": 1
+            },
+            {
+              "name": "V",
+              "type": 8
+            }
+          ],
+          "path": [
+            "ink_storage",
+            "lazy",
+            "mapping",
+            "Mapping"
+          ]
+        }
+      },
+      {
+        "id": 8,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
                   "name": "resource_type",
-                  "type": 8,
+                  "type": 9,
                   "typeName": "ResourceType"
                 },
                 {
@@ -305,27 +540,27 @@
                 },
                 {
                   "name": "size",
-                  "type": 9,
+                  "type": 10,
                   "typeName": "u64"
                 },
                 {
                   "name": "extensions",
-                  "type": 10,
+                  "type": 11,
                   "typeName": "BTreeMap<String, String>"
                 },
                 {
                   "name": "creator",
-                  "type": 13,
+                  "type": 14,
                   "typeName": "AccountId"
                 },
                 {
                   "name": "timestamp",
-                  "type": 14,
+                  "type": 15,
                   "typeName": "ScaleDateTimeLocal"
                 },
                 {
                   "name": "block_number",
-                  "type": 15,
+                  "type": 16,
                   "typeName": "u32"
                 },
                 {
@@ -335,7 +570,7 @@
                 },
                 {
                   "name": "size_stored",
-                  "type": 9,
+                  "type": 10,
                   "typeName": "u64"
                 }
               ]
@@ -350,7 +585,7 @@
         }
       },
       {
-        "id": 8,
+        "id": 9,
         "type": {
           "def": {
             "variant": {
@@ -379,7 +614,7 @@
         }
       },
       {
-        "id": 9,
+        "id": 10,
         "type": {
           "def": {
             "primitive": "u64"
@@ -387,13 +622,13 @@
         }
       },
       {
-        "id": 10,
+        "id": 11,
         "type": {
           "def": {
             "composite": {
               "fields": [
                 {
-                  "type": 11
+                  "type": 12
                 }
               ]
             }
@@ -414,17 +649,17 @@
         }
       },
       {
-        "id": 11,
+        "id": 12,
         "type": {
           "def": {
             "sequence": {
-              "type": 12
+              "type": 13
             }
           }
         }
       },
       {
-        "id": 12,
+        "id": 13,
         "type": {
           "def": {
             "tuple": [
@@ -435,13 +670,13 @@
         }
       },
       {
-        "id": 13,
+        "id": 14,
         "type": {
           "def": {
             "composite": {
               "fields": [
                 {
-                  "type": 5,
+                  "type": 6,
                   "typeName": "[u8; 32]"
                 }
               ]
@@ -455,7 +690,7 @@
         }
       },
       {
-        "id": 14,
+        "id": 15,
         "type": {
           "def": {
             "primitive": "str"
@@ -463,7 +698,7 @@
         }
       },
       {
-        "id": 15,
+        "id": 16,
         "type": {
           "def": {
             "primitive": "u32"
@@ -471,14 +706,46 @@
         }
       },
       {
-        "id": 16,
+        "id": 17,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "offset_key",
+                  "type": 5,
+                  "typeName": "Key"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "K",
+              "type": 1
+            },
+            {
+              "name": "V",
+              "type": 1
+            }
+          ],
+          "path": [
+            "ink_storage",
+            "lazy",
+            "mapping",
+            "Mapping"
+          ]
+        }
+      },
+      {
+        "id": 18,
         "type": {
           "def": {
             "composite": {
               "fields": [
                 {
                   "name": "metadata",
-                  "type": 17,
+                  "type": 19,
                   "typeName": "ResMetadata"
                 },
                 {
@@ -498,14 +765,14 @@
         }
       },
       {
-        "id": 17,
+        "id": 19,
         "type": {
           "def": {
             "composite": {
               "fields": [
                 {
                   "name": "resource_type",
-                  "type": 8,
+                  "type": 9,
                   "typeName": "ResourceType"
                 },
                 {
@@ -520,12 +787,12 @@
                 },
                 {
                   "name": "size",
-                  "type": 9,
+                  "type": 10,
                   "typeName": "u64"
                 },
                 {
                   "name": "extensions",
-                  "type": 10,
+                  "type": 11,
                   "typeName": "BTreeMap<String, String>"
                 }
               ]
@@ -540,7 +807,7 @@
         }
       },
       {
-        "id": 18,
+        "id": 20,
         "type": {
           "def": {
             "variant": {
@@ -573,56 +840,6 @@
         }
       },
       {
-        "id": 19,
-        "type": {
-          "def": {
-            "variant": {
-              "variants": [
-                {
-                  "fields": [
-                    {
-                      "type": 20
-                    }
-                  ],
-                  "index": 0,
-                  "name": "Ok"
-                },
-                {
-                  "fields": [
-                    {
-                      "type": 1
-                    }
-                  ],
-                  "index": 1,
-                  "name": "Err"
-                }
-              ]
-            }
-          },
-          "params": [
-            {
-              "name": "T",
-              "type": 20
-            },
-            {
-              "name": "E",
-              "type": 1
-            }
-          ],
-          "path": [
-            "Result"
-          ]
-        }
-      },
-      {
-        "id": 20,
-        "type": {
-          "def": {
-            "tuple": []
-          }
-        }
-      },
-      {
         "id": 21,
         "type": {
           "def": {
@@ -631,7 +848,7 @@
                 {
                   "fields": [
                     {
-                      "type": 7
+                      "type": 22
                     }
                   ],
                   "index": 0,
@@ -652,7 +869,7 @@
           "params": [
             {
               "name": "T",
-              "type": 7
+              "type": 22
             },
             {
               "name": "E",
@@ -668,6 +885,130 @@
         "id": 22,
         "type": {
           "def": {
+            "tuple": []
+          }
+        }
+      },
+      {
+        "id": 23,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "metadata",
+                  "type": 19,
+                  "typeName": "ResMetadata"
+                },
+                {
+                  "name": "data",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "key",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "policy",
+                  "type": 1,
+                  "typeName": "String"
+                }
+              ]
+            }
+          },
+          "path": [
+            "blbc",
+            "model",
+            "data",
+            "EncryptedData"
+          ]
+        }
+      },
+      {
+        "id": 24,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "metadata",
+                  "type": 19,
+                  "typeName": "ResMetadata"
+                },
+                {
+                  "name": "cid",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "key",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "policy",
+                  "type": 1,
+                  "typeName": "String"
+                }
+              ]
+            }
+          },
+          "path": [
+            "blbc",
+            "model",
+            "data",
+            "OffchainData"
+          ]
+        }
+      },
+      {
+        "id": 25,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 8
+                    }
+                  ],
+                  "index": 0,
+                  "name": "Ok"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 1
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Err"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 8
+            },
+            {
+              "name": "E",
+              "type": 1
+            }
+          ],
+          "path": [
+            "Result"
+          ]
+        }
+      },
+      {
+        "id": 26,
+        "type": {
+          "def": {
             "variant": {
               "variants": [
                 {
@@ -703,6 +1044,387 @@
           ],
           "path": [
             "Result"
+          ]
+        }
+      },
+      {
+        "id": 27,
+        "type": {
+          "def": {
+            "primitive": "bool"
+          }
+        }
+      },
+      {
+        "id": 28,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 29
+                    }
+                  ],
+                  "index": 0,
+                  "name": "Ok"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 1
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Err"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 29
+            },
+            {
+              "name": "E",
+              "type": 1
+            }
+          ],
+          "path": [
+            "Result"
+          ]
+        }
+      },
+      {
+        "id": 29,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "ids",
+                  "type": 0,
+                  "typeName": "Vec<String>"
+                },
+                {
+                  "name": "bookmark",
+                  "type": 1,
+                  "typeName": "String"
+                }
+              ]
+            }
+          },
+          "path": [
+            "blbc",
+            "model",
+            "query",
+            "IDsWithPagination"
+          ]
+        }
+      },
+      {
+        "id": 30,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 31,
+                      "typeName": "DocumentQueryConditions"
+                    }
+                  ],
+                  "index": 0,
+                  "name": "DocumentQueryConditions"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 37,
+                      "typeName": "EntityAssetQueryConditions"
+                    }
+                  ],
+                  "index": 1,
+                  "name": "EntityAssetQueryConditions"
+                }
+              ]
+            }
+          },
+          "path": [
+            "blbc",
+            "model",
+            "query",
+            "QueryConditions"
+          ]
+        }
+      },
+      {
+        "id": 31,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "common_query_conditions",
+                  "type": 32,
+                  "typeName": "CommonQueryConditions"
+                },
+                {
+                  "name": "document_type",
+                  "type": 35,
+                  "typeName": "Option<DocumentType>"
+                },
+                {
+                  "name": "preceding_document_id",
+                  "type": 20,
+                  "typeName": "Option<String>"
+                },
+                {
+                  "name": "head_document_id",
+                  "type": 20,
+                  "typeName": "Option<String>"
+                },
+                {
+                  "name": "entity_asset_id",
+                  "type": 20,
+                  "typeName": "Option<String>"
+                }
+              ]
+            }
+          },
+          "path": [
+            "blbc",
+            "model",
+            "query",
+            "DocumentQueryConditions"
+          ]
+        }
+      },
+      {
+        "id": 32,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "is_desc",
+                  "type": 27,
+                  "typeName": "bool"
+                },
+                {
+                  "name": "resource_id",
+                  "type": 20,
+                  "typeName": "Option<String>"
+                },
+                {
+                  "name": "is_name_exact",
+                  "type": 33,
+                  "typeName": "Option<bool>"
+                },
+                {
+                  "name": "name",
+                  "type": 20,
+                  "typeName": "Option<String>"
+                },
+                {
+                  "name": "is_time_exact",
+                  "type": 33,
+                  "typeName": "Option<bool>"
+                },
+                {
+                  "name": "time",
+                  "type": 34,
+                  "typeName": "Option<ScaleDateTimeLocal>"
+                },
+                {
+                  "name": "time_after_inclusive",
+                  "type": 34,
+                  "typeName": "Option<ScaleDateTimeLocal>"
+                },
+                {
+                  "name": "time_before_exclusive",
+                  "type": 34,
+                  "typeName": "Option<ScaleDateTimeLocal>"
+                },
+                {
+                  "name": "last_resource_id",
+                  "type": 20,
+                  "typeName": "Option<String>"
+                }
+              ]
+            }
+          },
+          "path": [
+            "blbc",
+            "model",
+            "query",
+            "CommonQueryConditions"
+          ]
+        }
+      },
+      {
+        "id": 33,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "index": 0,
+                  "name": "None"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 27
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Some"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 27
+            }
+          ],
+          "path": [
+            "Option"
+          ]
+        }
+      },
+      {
+        "id": 34,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "index": 0,
+                  "name": "None"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 15
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Some"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 15
+            }
+          ],
+          "path": [
+            "Option"
+          ]
+        }
+      },
+      {
+        "id": 35,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "index": 0,
+                  "name": "None"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 36
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Some"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 36
+            }
+          ],
+          "path": [
+            "Option"
+          ]
+        }
+      },
+      {
+        "id": 36,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "index": 0,
+                  "name": "DesignDocument"
+                },
+                {
+                  "index": 1,
+                  "name": "ProductionDocument"
+                },
+                {
+                  "index": 2,
+                  "name": "TransferDocument"
+                },
+                {
+                  "index": 3,
+                  "name": "UsageDocument"
+                },
+                {
+                  "index": 4,
+                  "name": "RepairDocument"
+                }
+              ]
+            }
+          },
+          "path": [
+            "blbc",
+            "model",
+            "document",
+            "DocumentType"
+          ]
+        }
+      },
+      {
+        "id": 37,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "common_query_conditions",
+                  "type": 32,
+                  "typeName": "CommonQueryConditions"
+                },
+                {
+                  "name": "design_document_id",
+                  "type": 20,
+                  "typeName": "Option<String>"
+                }
+              ]
+            }
+          },
+          "path": [
+            "blbc",
+            "model",
+            "query",
+            "EntityAssetQueryConditions"
           ]
         }
       }
