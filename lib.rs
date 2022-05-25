@@ -8,6 +8,7 @@ pub mod error_code;
 pub mod extension;
 pub mod model;
 pub mod auth;
+pub mod key_switch;
 
 use ink_lang as ink;
 
@@ -19,7 +20,9 @@ mod blbc {
     use ink_storage::{traits::SpreadAllocate, Mapping};
     use crate::model::auth::{AuthRequest, AuthRequestStored, AuthResponse, AuthResponseStored};
     use crate::model::datetime::ScaleDateTimeLocal;
+    use crate::model::key_switch::{KeySwitchResultQuery, KeySwitchResultStored, KeySwitchTriggerStored};
     use crate::model::query::QueryConditions;
+    use ink_prelude::format;
 
 
     #[ink(storage)]
@@ -41,6 +44,10 @@ mod blbc {
         pub auth_request_map: Mapping<String, AuthRequestStored>,
         /// 存储通过 auth_session_id 可以找到的 AuthResponseStored
         pub auth_response_map: Mapping<String, AuthResponseStored>,
+        /// 存储通过 ks_session_id 可以找到的 KeySwitchTriggerStored
+        pub ks_trigger_map: Mapping<String, KeySwitchTriggerStored>,
+        /// 存储通过 ${ks_session_id}_${creator} 可以找到的 KeySwitchResultStored
+        pub ks_result_map: Mapping<String, KeySwitchResultStored>
     }
 
 
@@ -54,6 +61,18 @@ mod blbc {
     pub struct AuthCreated {
         pub event_id: String,
         pub auth_session_id: String,
+    }
+
+    #[ink(event)]
+    pub struct KSCreated {
+        pub event_id: String,
+        pub data: KeySwitchTriggerStored,
+    }
+
+    #[ink(event)]
+    pub struct KSResultCreated {
+        pub event_id: String,
+        pub value: String,
     }
 
     pub const EVENT_ID_FOR_RETURNED_VALUE: &'static str = "~TXRET~";
@@ -229,6 +248,27 @@ mod blbc {
             ink_env::debug_println!("---");
             ink_env::debug_println!("list_auth_session_ids_by_requestor");
             auth::list_auth_session_ids_by_requestor(self, page_size, bookmark, is_latest_first)
+        }
+
+        #[ink(message)]
+        pub fn get_key_switch_result(&self, query: KeySwitchResultQuery) -> Result<KeySwitchResultStored, String> {
+            ink_env::debug_println!("---");
+            ink_env::debug_println!("get_key_switch_result");
+
+            // 获取 ks_session_id and result_creator
+            let ks_session_id = query.key_switch_session_id;
+            let result_creator = query.result_creator;
+
+            let key = format!("'{}'_'{}'",&ks_session_id,&result_creator);
+
+            // 读 KeySwitchResultStored 并返回，若未找到则返回 CODE_NOT_FOUND
+            let ks_result_stored = match self.ks_result_map.get(&key) {
+                Some(it) => it,
+                None => return Err(error_code::CODE_NOT_FOUND.into()),
+            };
+
+            // 合约现还不支持范型，故不能指定 lifetime，只能把有所有权的东西传出。
+            return Ok(ks_result_stored.clone());
         }
     }
 

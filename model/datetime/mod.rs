@@ -9,7 +9,7 @@ use ink_prelude::string::String;
 use ink_storage::traits::{PackedLayout, SpreadLayout};
 use scale::{Decode, Encode};
 
-#[derive(Clone, Eq, Ord)]
+#[derive(Clone, Eq, Ord, Hash)]
 pub struct ScaleDateTimeLocal {
     datetime: DateTime<FixedOffset>,
     rfc3339_str: String,
