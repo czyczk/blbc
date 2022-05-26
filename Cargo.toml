@@ -19,6 +19,17 @@ scale = { package = "parity-scale-codec", version = "3", default-features = fals
 base64 = { version = "0.13.0", default-features = false, features = ["alloc"] }
 chrono = { version = "0.4.19", default-features = false, features = ["alloc"] }
 
+# Required by casbink module
+ritelinked = { version = "0.3.2" }
+derive_more = { version = "0.99", default-features = false, features = ["from", "display"] }
+regex-automata = { version = "0.1", default-features = false }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+rhai = { version = "1.7.0", default-features = false, features = ["only_i32", "no_function", "no_float", "no_optimize", "no_module", "unchecked"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+rhai = { version = "1.7.0", default-features = false, features = ["wasm-bindgen", "only_i32", "no_float", "no_optimize", "no_module", "unchecked"] }
+
 [dev-dependencies]
 sha2 = "0.10.0"
 
@@ -42,5 +53,6 @@ std = [
     "scale-info/std",
     "base64/std",
     "chrono/std",
+    "regex-automata/std",
 ]
 ink-as-dependency = []

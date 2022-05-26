@@ -2,6 +2,7 @@
 
 extern crate alloc;
 
+pub mod casbink;
 pub mod data;
 pub mod error_code;
 pub mod extension;
@@ -11,16 +12,15 @@ use ink_lang as ink;
 
 #[ink::contract]
 mod blbc {
+    use crate::model::query::QueryConditions;
     use crate::{
         data, error_code,
-        model::data::{PlainData, EncryptedData, OffchainData, ResMetadataStored},
+        model::data::{EncryptedData, OffchainData, PlainData, ResMetadataStored},
         model::query::IDsWithPagination,
     };
     use ink_prelude::string::String;
     use ink_prelude::vec::Vec;
     use ink_storage::{traits::SpreadAllocate, Mapping};
-    use crate::model::query::QueryConditions;
-
 
     #[ink(storage)]
     #[derive(SpreadAllocate)]
@@ -36,7 +36,6 @@ mod blbc {
         /// 存储通过资源 ID 可以找到的策略
         pub res_policy_map: Mapping<String, String>,
     }
-
 
     #[ink(event)]
     pub struct ResourceCreated {
@@ -58,6 +57,9 @@ mod blbc {
             plain_data: PlainData,
             event_id: Option<String>,
         ) -> Result<(), String> {
+            // TODO: casbink test
+            let m = crate::casbink::model::default_model::DefaultModel::default();
+            ink_env::debug_println!("{:?}", m.model);
             data::create_plain_data(self, plain_data, event_id)
         }
 
@@ -156,7 +158,11 @@ mod blbc {
         }
 
         #[ink(message)]
-        pub fn list_resource_ids_by_conditions(&mut self, query_conditions: QueryConditions, page_size: u64) -> Result<IDsWithPagination, String> {
+        pub fn list_resource_ids_by_conditions(
+            &mut self,
+            query_conditions: QueryConditions,
+            page_size: u64,
+        ) -> Result<IDsWithPagination, String> {
             data::list_resource_ids_by_conditions(self, query_conditions, page_size)
         }
     }
@@ -172,13 +178,15 @@ mod blbc {
         extern crate alloc;
 
         use crate::model::data::{PlainData, ResMetadata, ResourceType};
+        use crate::model::document::DocumentType;
+        use crate::model::query::{
+            CommonQueryConditions, DocumentQueryConditions, EntityAssetQueryConditions,
+        };
         use alloc::collections::BTreeMap;
-        use std::iter::FromIterator;
         /// Imports `ink_lang` so we can use `#[ink::test]`.
         use ink_lang as ink;
         use sha2::{Digest, Sha256};
-        use crate::model::document::DocumentType;
-        use crate::model::query::{CommonQueryConditions, DocumentQueryConditions, EntityAssetQueryConditions};
+        use std::iter::FromIterator;
 
         #[ink::test]
         fn default_works() {
@@ -273,7 +281,9 @@ mod blbc {
                 Err(err) => panic!("无法解析 key: {}", err),
             };
             // Invoke with sample_encrypted_data1 and expect the return value to be Ok()
-            assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data1, None)
+                .is_ok());
 
             // Check if the data in maps is as expected
             assert_eq!(
@@ -284,10 +294,7 @@ mod blbc {
                 blbc.res_key_map.get(&resource_id),
                 Some(key_decoded.to_owned())
             );
-            assert_eq!(
-                blbc.res_policy_map.get(&resource_id),
-                Some(policy)
-            );
+            assert_eq!(blbc.res_policy_map.get(&resource_id), Some(policy));
 
             // Check if the stored metadata is correct
             let metadata_stored = blbc.res_metadata_map.get(&resource_id);
@@ -312,10 +319,14 @@ mod blbc {
                 sample_encrypted_data1.metadata.resource_id.clone();
 
             // Invoke with data1 and expect the return value to be Ok()
-            assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data1, None)
+                .is_ok());
 
             // Invoke with data2 and expect the return value to be Err()
-            assert!(blbc.create_encrypted_data(sample_encrypted_data2, None).is_err());
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data2, None)
+                .is_err());
         }
 
         #[ink::test]
@@ -335,7 +346,9 @@ mod blbc {
                 Err(err) => panic!("无法解析 key: {}", err),
             };
             // Invoke with sample_encrypted_data1 and expect the return value to be Ok()
-            assert!(blbc.create_offchain_data(sample_offchain_data1, None).is_ok());
+            assert!(blbc
+                .create_offchain_data(sample_offchain_data1, None)
+                .is_ok());
 
             // Check if the data in maps is as expected
             assert_eq!(
@@ -346,10 +359,7 @@ mod blbc {
                 blbc.res_key_map.get(&resource_id),
                 Some(key_decoded.to_owned())
             );
-            assert_eq!(
-                blbc.res_policy_map.get(&resource_id),
-                Some(policy)
-            );
+            assert_eq!(blbc.res_policy_map.get(&resource_id), Some(policy));
 
             // Check if the stored metadata is correct
             let metadata_stored = blbc.res_metadata_map.get(&resource_id);
@@ -372,10 +382,14 @@ mod blbc {
                 sample_offchain_data1.metadata.resource_id.clone();
 
             // Invoke with data1 and expect the return value to be Ok()
-            assert!(blbc.create_offchain_data(sample_offchain_data1, None).is_ok());
+            assert!(blbc
+                .create_offchain_data(sample_offchain_data1, None)
+                .is_ok());
 
             // Invoke with data2 and expect the return value to be Err()
-            assert!(blbc.create_offchain_data(sample_offchain_data2, None).is_err());
+            assert!(blbc
+                .create_offchain_data(sample_offchain_data2, None)
+                .is_err());
         }
 
         #[ink::test]
@@ -440,10 +454,7 @@ mod blbc {
             };
 
             // Check if the data in map is as expected
-            assert_eq!(
-                data_as_base64,
-                data_to_be_checked
-            );
+            assert_eq!(data_as_base64, data_to_be_checked);
         }
 
         #[ink::test]
@@ -471,7 +482,9 @@ mod blbc {
             let key_as_base64: String = sample_encrypted_data1.key.clone();
 
             // Invoke with sample_encrypted_data1 and expect the return value to be Ok()
-            assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data1, None)
+                .is_ok());
 
             // Invoke get_key and expect the return value to be Ok()
             let key_to_be_checked = match blbc.get_key(resource_id) {
@@ -480,10 +493,7 @@ mod blbc {
             };
 
             // Check if the key in res_key_map is as expected
-            assert_eq!(
-                key_as_base64,
-                key_to_be_checked
-            );
+            assert_eq!(key_as_base64, key_to_be_checked);
         }
 
         #[ink::test]
@@ -496,7 +506,9 @@ mod blbc {
             non_existent_resource_id.push_str("_non_existent");
 
             // Invoke with sample_encrypted_data1 and expect the return value to be Ok()
-            assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data1, None)
+                .is_ok());
 
             // Invoke with a non existent resource ID and expect the response status to be ERROR
             assert!(blbc.get_key(non_existent_resource_id).is_err());
@@ -511,7 +523,9 @@ mod blbc {
             let policy = sample_encrypted_data1.policy.clone();
 
             // Invoke with sample_encrypted_data1 and expect the return value to be Ok()
-            assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data1, None)
+                .is_ok());
 
             // Invoke get_policy and expect the return value to be Ok()
             let policy_to_be_checked = match blbc.get_policy(resource_id) {
@@ -520,24 +534,20 @@ mod blbc {
             };
 
             // Check if the policy in res_policy_map is as expected
-            assert_eq!(
-                policy,
-                policy_to_be_checked
-            );
+            assert_eq!(policy, policy_to_be_checked);
 
             // Prepare the arg with offchain data and do it again
             let sample_offchain_data1 = get_sample_offchain_data1();
             let resource_id2 = sample_offchain_data1.metadata.resource_id.clone();
             let policy2 = sample_offchain_data1.policy.clone();
-            assert!(blbc.create_offchain_data(sample_offchain_data1, None).is_ok());
+            assert!(blbc
+                .create_offchain_data(sample_offchain_data1, None)
+                .is_ok());
             let policy_to_be_checked2 = match blbc.get_policy(resource_id2) {
                 Ok(b) => b,
                 Err(msg) => panic!("{}", msg),
             };
-            assert_eq!(
-                policy2,
-                policy_to_be_checked2
-            );
+            assert_eq!(policy2, policy_to_be_checked2);
         }
 
         #[ink::test]
@@ -550,7 +560,9 @@ mod blbc {
             non_existent_resource_id.push_str("_non_existent");
 
             // Invoke with sample_encrypted_data1 and expect the return value to be Ok()
-            assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data1, None)
+                .is_ok());
 
             // Invoke with a non existent resource ID and expect the response status to be ERROR
             assert!(blbc.get_policy(non_existent_resource_id).is_err());
@@ -578,7 +590,6 @@ mod blbc {
         //     assert!(blbc.list_resource_ids_by_creator("documen".into(), false, 9, None).is_ok());
         //     assert!(blbc.list_resource_ids_by_creator("document".into(), true, 5, Some("201".into())).is_ok());
         // }
-
 
         // 关于时间的查询无法测试，其余查询条件已测试通过
         // #[ink::test]
@@ -633,7 +644,6 @@ mod blbc {
         //     assert!(blbc.list_resource_ids_by_conditions(query_conditions2, 9).is_ok());
         // }
 
-
         const DATA1: &str = "data1";
         const DATA2: &str = "data2";
         //const DATA3: &str = "data3";
@@ -653,7 +663,7 @@ mod blbc {
                 ("name".into(), "Sample PlainData 1".into()),
                 ("documentType".into(), DocumentType::DesignDocument.into()),
                 ("headDocumentId".into(), "1000".into()),
-                ("designDocumentId".into(), "101".into())
+                ("designDocumentId".into(), "101".into()),
             ]);
 
             return PlainData {
@@ -683,7 +693,7 @@ mod blbc {
                 ("name".into(), "示例明文数据2".into()),
                 ("documentType".into(), DocumentType::TransferDocument.into()),
                 ("headDocumentId".into(), "1000".into()),
-                ("designDocumentId".into(), "101".into())
+                ("designDocumentId".into(), "101".into()),
             ]);
 
             return PlainData {
@@ -713,9 +723,8 @@ mod blbc {
                 ("name".into(), "Sample Encrypted Data 1".into()),
                 ("documentType".into(), DocumentType::UsageDocument.into()),
                 ("headDocumentId".into(), "1000".into()),
-                ("designDocumentId".into(), "101".into())
+                ("designDocumentId".into(), "101".into()),
             ]);
-
 
             return EncryptedData {
                 metadata: ResMetadata {
@@ -747,9 +756,8 @@ mod blbc {
                 ("name".into(), "示例加密数据2".into()),
                 ("documentType".into(), DocumentType::UsageDocument.into()),
                 ("headDocumentId".into(), "1000".into()),
-                ("designDocumentId".into(), "101".into())
+                ("designDocumentId".into(), "101".into()),
             ]);
-
 
             return EncryptedData {
                 metadata: ResMetadata {
@@ -780,7 +788,7 @@ mod blbc {
                 ("name".into(), "Sample Offchain Data 1".into()),
                 ("documentType".into(), DocumentType::RepairDocument.into()),
                 ("headDocumentId".into(), "1000".into()),
-                ("designDocumentId".into(), "101".into())
+                ("designDocumentId".into(), "101".into()),
             ]);
 
             return OffchainData {
@@ -809,9 +817,12 @@ mod blbc {
             let extension_map: BTreeMap<String, String> = BTreeMap::from([
                 ("dataType".into(), "document".into()),
                 ("name".into(), "示例链下数据2".into()),
-                ("documentType".into(), DocumentType::ProductionDocument.into()),
+                (
+                    "documentType".into(),
+                    DocumentType::ProductionDocument.into(),
+                ),
                 ("headDocumentId".into(), "10001".into()),
-                ("designDocumentId".into(), "101".into())
+                ("designDocumentId".into(), "101".into()),
             ]);
 
             return OffchainData {
