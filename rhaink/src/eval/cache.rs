@@ -1,6 +1,9 @@
 //! System caches.
 
-use crate::{func::callable_function::CallableFunction, Identifier, StaticVec};
+use crate::func::CallableFunction;
+use crate::{Identifier, StaticVec};
+
+use ink_prelude::boxed::Box;
 use ink_prelude::collections::BTreeMap;
 
 /// _(internals)_ An entry in a function resolution cache.

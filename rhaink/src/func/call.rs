@@ -2,22 +2,33 @@
 
 use crate::{
     api::default_limits::MAX_DYNAMIC_PARAMETERS,
+    ast::{Expr, FnCallHashes, Stmt},
+    engine::{
+        KEYWORD_EVAL, KEYWORD_FN_PTR, KEYWORD_FN_PTR_CALL, KEYWORD_FN_PTR_CURRY, KEYWORD_IS_DEF_VAR,
+    },
     eval::{
         cache::{Caches, FnResolutionCacheEntry},
         global_state::GlobalRuntimeState,
     },
     module::Module,
     types::{dynamic::Dynamic, immutable_string::ImmutableString},
-    Engine, FnArgsVec,
+    Engine, FnArgsVec, FnPtr, Identifier, OptimizationLevel, Position, RhaiError, RhaiResult,
+    RhaiResultOf, Scope, ERR,
 };
 
-use super::{callable_function::CallableFunction, hashing::combine_hashes};
+use super::{
+    calc_fn_hash, callable_function::CallableFunction, get_builtin_binary_op_fn,
+    get_builtin_op_assignment_fn, hashing::combine_hashes,
+};
 use super::{hashing::calc_fn_params_hash, native::FnAny};
 use core::{
     any::{type_name, TypeId},
     convert::TryFrom,
     mem,
 };
+
+use ink_prelude::boxed::Box;
+use ink_prelude::string::String;
 
 /// Arguments to a function call, which is a list of [`&mut Dynamic`][Dynamic].
 pub type FnCallArgs<'a> = [&'a mut Dynamic];
@@ -741,6 +752,8 @@ impl Engine {
         pos: Position,
         level: usize,
     ) -> RhaiResultOf<(Dynamic, bool)> {
+        use crate::{func::calc_fn_hash, FnPtr};
+
         let is_ref_mut = target.is_ref();
 
         let (result, updated) = match fn_name {

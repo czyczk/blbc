@@ -39,13 +39,17 @@ pub type LockGuardMut<'a, T> = std::cell::RefMut<'a, T>;
 pub use std::sync::RwLock as Locked;
 
 use crate::{
+    ast::FnCallHashes,
     engine::Engine,
-    eval::global_state::GlobalRuntimeState,
+    eval::{global_state::GlobalRuntimeState, Caches},
     module::Module,
-    tokenizer::Position,
+    plugin::PluginFunction,
+    tokenizer::{Position, Token, TokenizeState},
     types::dynamic::{Dynamic, Variant},
-    RhaiResultOf, StaticVec, ERR,
+    EvalContext, FuncArgs, RhaiResult, RhaiResultOf, StaticVec, VarDefInfo, ERR,
 };
+
+use super::{calc_fn_hash, FnCallArgs};
 
 /// Read-only lock guard for synchronized shared object.
 #[cfg(feature = "sync")]

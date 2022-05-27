@@ -1,23 +1,22 @@
 //! Main module defining the lexer and parser.
 
+extern crate alloc;
+
 use crate::engine::{
     Precedence, KEYWORD_DEBUG, KEYWORD_EVAL, KEYWORD_FN_PTR, KEYWORD_FN_PTR_CALL,
     KEYWORD_FN_PTR_CURRY, KEYWORD_IS_DEF_VAR, KEYWORD_PRINT, KEYWORD_THIS, KEYWORD_TYPE_OF,
 };
 use crate::func::native::OnParseTokenCallback;
 use crate::{Engine, Identifier, LexError, SmartString, StaticVec, INT, UNSIGNED_INT};
+use alloc::{borrow::Cow, rc::Rc};
 use core::{
-    borrow::Cow,
     cell::Cell,
     char, fmt,
     iter::{FusedIterator, Peekable},
     num::NonZeroUsize,
     ops::{Add, AddAssign},
-    rc::Rc,
     str::{Chars, FromStr},
 };
-#[cfg(feature = "no_std")]
-use std::prelude::v1::*;
 
 /// _(internals)_ A type containing commands to control the tokenizer.
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]

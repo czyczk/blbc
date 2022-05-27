@@ -6,11 +6,13 @@ use core::{
     str::FromStr,
 };
 
-use alloc::fmt;
+use core::fmt;
+
+use ink_prelude::boxed::Box;
 use ink_prelude::string::String;
 
-use crate::rhaink::func::native::{shared_get_mut, shared_make_mut, shared_take};
-use crate::rhaink::{Shared, SmartString};
+use crate::func::native::{shared_get_mut, shared_make_mut, shared_take};
+use crate::{Shared, SmartString};
 
 /// The system immutable string type.
 ///

@@ -194,7 +194,7 @@ impl<'a> Target<'a> {
     #[must_use]
     pub fn is<T: Variant + Clone>(&self) -> bool {
         #[allow(unused_imports)]
-        use std::any::TypeId;
+        use core::any::TypeId;
 
         match self {
             Self::RefMut(r) => r.is::<T>(),

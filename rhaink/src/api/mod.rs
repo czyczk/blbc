@@ -6,16 +6,14 @@ pub mod custom_syntax;
 pub mod deprecated;
 pub mod eval;
 pub mod events;
-pub mod files;
+// pub mod files;
 pub mod json;
-pub mod limits;
-pub mod optimize;
+// pub mod limits;
+// pub mod optimize;
 pub mod options;
 pub mod register;
 pub mod run;
 pub mod type_names;
-
-use ink_prelude::boxed::Box;
 
 use crate::{engine::Precedence, tokenizer::Token, Engine, Identifier};
 

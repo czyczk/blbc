@@ -3,6 +3,7 @@ extern crate alloc;
 use core::any::TypeId;
 use core::cmp::Ordering;
 use core::fmt;
+use core::iter::once;
 use core::ops::Add;
 use core::ops::AddAssign;
 
@@ -12,6 +13,7 @@ use ink_prelude::collections::BTreeSet;
 
 use crate::ast::flags::FnAccess;
 use crate::func::callable_function::CallableFunction;
+use crate::func::IteratorFn;
 use crate::StaticVec;
 
 use super::types::custom_types::CustomTypesCollection;

@@ -1,10 +1,13 @@
 use core::fmt;
 
-use crate::{ast::flags::FnAccess, Shared};
+use crate::{ast::flags::FnAccess, plugin::PluginFunction, Shared};
 
-use super::native::{FnAny, FnPlugin, IteratorFn};
+use super::{
+    native::{FnAny, FnPlugin, IteratorFn},
+    SendSync,
+};
 
-extern crate alloc;
+use ink_prelude::boxed::Box;
 
 /// A type encapsulating a function callable by Rhai.
 #[derive(Clone)]

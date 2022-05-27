@@ -5,6 +5,7 @@ use crate::func::native::SendSync;
 use crate::{reify, ExclusiveRange, FnPtr, ImmutableString, InclusiveRange, INT};
 use core::{
     any::{type_name, Any, TypeId},
+    convert::From,
     fmt,
     hash::{Hash, Hasher},
     mem,

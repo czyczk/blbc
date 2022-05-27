@@ -1,10 +1,10 @@
-mod cache;
+pub mod cache;
 mod chaining;
 mod data_check;
-mod debugger;
+// mod debugger;
 mod eval_context;
 mod expr;
-mod global_state;
+pub mod global_state;
 mod stmt;
 mod target;
 
