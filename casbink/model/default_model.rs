@@ -102,4 +102,9 @@ impl Model for DefaultModel {
 
         true
     }
+
+    #[inline]
+    fn get_model(&self) -> &BTreeMap<String, AssertionMap> {
+        &self.model
+    }
 }

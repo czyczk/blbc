@@ -2,11 +2,12 @@
 
 extern crate alloc;
 
-pub mod casbink;
+mod casbink;
 pub mod data;
 pub mod error_code;
 pub mod extension;
 pub mod model;
+mod rhaink;
 
 use ink_lang as ink;
 

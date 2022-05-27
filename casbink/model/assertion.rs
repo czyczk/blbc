@@ -24,3 +24,10 @@ impl Default for Assertion {
         }
     }
 }
+
+impl Assertion {
+    #[inline]
+    pub fn get_policy(&self) -> &LinkedHashSet<Vec<String>> {
+        &self.policy
+    }
+}

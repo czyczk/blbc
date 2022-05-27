@@ -1,0 +1,50 @@
+[workspace]
+members = [".", "codegen"]
+
+[package]
+name = "rhaink"
+version = "1.7.0"
+rust-version = "1.57"
+edition = "2018"
+authors = ["Jonathan Turner", "Lukáš Hozda", "Stephen Chung", "jhwgh1968", "Zenas Chen"]
+description = "Embedded scripting for Rust"
+homepage = "https://rhai.rs"
+repository = "https://github.com/rhaiscript"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+include = ["**/*.rs", "scripts/*.rhai", "**/*.md", "Cargo.toml"]
+keywords = ["scripting", "scripting-engine", "scripting-language", "embedded"]
+categories = ["no-std", "embedded", "wasm", "parser-implementations"]
+
+[dependencies]
+rhaink_codegen = { version = "1.4", path = "codegen", default-features = false }
+
+ink_prelude = { version = "^3.0.1", default-features = false }
+smartstring = { version = "^1.0.1", default-features = false }
+smallvec = { version = "^1.8.0", default-features = false, features = ["union", "const_new"] }
+instant = { version = "^0.1.12", default-features = false }
+ahash = { version = "0.7", default-features = false }
+bitflags = { version = "1", default-features = false }
+
+[features]
+default = ["std"]
+std = [
+    "ink_prelude/std",
+    "smartstring/std",
+    "ahash/std",
+]
+unchecked = []                  # unchecked arithmetic
+sync = []                       # restrict to only types that implement Send + Sync
+no_position = []                # do not track position in the parser
+no_optimize = []                # no script optimizer
+no_float = []                   # no floating-point
+f32_float = []                  # set FLOAT=f32
+only_i32 = []                   # set INT=i32 (useful for 32-bit systems)
+only_i64 = []                   # set INT=i64 (default) and disable support for all other integer types
+no_index = []                   # no arrays and indexing
+no_object = []                  # no custom objects
+no_function = ["no_closure"]    # no script-defined functions (meaning no closures)
+no_closure = []                 # no automatic sharing and capture of anonymous functions to external variables
+no_module = []                  # no modules
+internals = []                  # expose internal data structures
+debugging = ["internals"]       # enable debugging

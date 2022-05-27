@@ -24,11 +24,14 @@ ritelinked = { version = "0.3.2" }
 derive_more = { version = "0.99", default-features = false, features = ["from", "display"] }
 regex-automata = { version = "0.1", default-features = false }
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-rhai = { version = "1.7.0", default-features = false, features = ["only_i32", "no_function", "no_float", "no_optimize", "no_module", "unchecked"] }
+# Rhai ink! variant
+rhaink = { version = "1.7.0", path = "./rhaink", features = ["only_i32", "no_function", "no_closure", "no_float", "no_optimize", "no_module", "unchecked"] }
 
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-rhai = { version = "1.7.0", default-features = false, features = ["wasm-bindgen", "only_i32", "no_float", "no_optimize", "no_module", "unchecked"] }
+# [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+# rhai = { version = "1.7.0", default-features = false, features = ["only_i32", "no_function", "no_float", "no_optimize", "no_module", "unchecked"] }
+
+# [target.'cfg(target_arch = "wasm32")'.dependencies]
+# rhai = { version = "1.7.0", default-features = false, features = ["wasm-bindgen", "only_i32", "no_function", "no_float", "no_optimize", "no_module", "unchecked"] }
 
 [dev-dependencies]
 sha2 = "0.10.0"
