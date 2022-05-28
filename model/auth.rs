@@ -39,7 +39,7 @@ pub struct AuthRequestStored {
     pub resource_id: String,
     /// 扩展字段
     pub extensions: BTreeMap<String, String>,
-    /// 访问权申请者公钥（Base64 编码）
+    /// 访问权申请者公钥
     pub creator: AccountId,
     /// 时间戳
     pub timestamp: ScaleDateTimeLocal,
@@ -54,7 +54,7 @@ pub struct AuthResponseStored {
     pub result: bool,
     /// 扩展字段
     pub extensions: BTreeMap<String, String>,
-    /// 访问权批复者公钥（Base64 编码）
+    /// 访问权批复者公钥
     pub creator: AccountId,
     /// 时间戳
     pub timestamp: ScaleDateTimeLocal,

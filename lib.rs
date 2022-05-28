@@ -32,6 +32,8 @@ mod blbc {
         pub resource_ids: Vec<String>,
         /// 存储所有请求的 auth_session_id
         pub auth_session_ids: Vec<String>,
+        /// 存储所有的 ${ksSessionID}_${creator}
+        pub ks_result_keys: Vec<String>,
         /// 存储通过资源 ID 可以找到的链上资源，资源内容是字节数组
         pub res_map: Mapping<String, Vec<u8>>,
         /// 存储通过资源 ID 可以找到的资源元数据
@@ -259,7 +261,24 @@ mod blbc {
             let ks_session_id = query.key_switch_session_id;
             let result_creator = query.result_creator;
 
-            let key = format!("'{}'_'{}'",&ks_session_id,&result_creator);
+            let key = format!("'{}'_'{:?}'",&ks_session_id,&result_creator);
+
+            // 读 KeySwitchResultStored 并返回，若未找到则返回 CODE_NOT_FOUND
+            let ks_result_stored = match self.ks_result_map.get(&key) {
+                Some(it) => it,
+                None => return Err(error_code::CODE_NOT_FOUND.into()),
+            };
+
+            // 合约现还不支持范型，故不能指定 lifetime，只能把有所有权的东西传出。
+            return Ok(ks_result_stored.clone());
+        }
+
+        #[ink(message)]
+        pub fn get_key_switch_result_with_accountid_string(&self, ks_session_id: String, creator_string: String) -> Result<KeySwitchResultStored, String> {
+            ink_env::debug_println!("---");
+            ink_env::debug_println!("get_key_switch_result_with_accountid_string");
+
+            let key = format!("'{}'_'{}'",&ks_session_id,&creator_string);
 
             // 读 KeySwitchResultStored 并返回，若未找到则返回 CODE_NOT_FOUND
             let ks_result_stored = match self.ks_result_map.get(&key) {

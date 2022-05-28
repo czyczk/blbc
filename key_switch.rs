@@ -1,16 +1,15 @@
 extern crate alloc;
 use alloc::collections::BTreeMap;
 use ink_prelude::string::String;
-use casbin::prelude::Enforcer;
-use casbin::prelude::DefaultModel;
-use casbin::CoreApi;
 use crate::blbc::{Blbc, EVENT_ID_FOR_RETURNED_VALUE, KSCreated, KSResultCreated};
 use crate::error_code;
+// use crate::casbink::model::default_model::DefaultModel;
 use ink_lang as ink;
 use ink::codegen::{EmitEvent, Env};
 use ink_prelude::format;
+use ink_prelude::vec::Vec;
 use crate::model::datetime::ScaleDateTimeLocal;
-use crate::model::key_switch::{DepartmentIdentityStored, KeySwitchResult, KeySwitchResultStored, KeySwitchTrigger, KeySwitchTriggerStored};
+use crate::model::key_switch::{DepartmentIdentityStored, KeySwitchResult, KeySwitchResultQuery, KeySwitchResultStored, KeySwitchTrigger, KeySwitchTriggerStored};
 
 pub async fn create_key_switch_trigger(ctx: &mut Blbc, ks_session_id: String, dept_identity: DepartmentIdentityStored, ks_trigger: KeySwitchTrigger, event_id: String) -> Result<(), String> {
     // 获取 auth_session_id
@@ -43,7 +42,7 @@ pub async fn create_key_switch_trigger(ctx: &mut Blbc, ks_session_id: String, de
             return Err("资源 ID 与授权会话 ID 不匹配".into());
         }
         // 验证 auth_request_stored.creator 是否等于链码调用者 creator
-        if auth_request_stored.creator != creator {
+        if auth_request_stored.creator != creator{
             return Err("不是申请授权者本人".into());
         }
         // 如果 auth_session_id 不为空值，则获取 auth_response_stored。若批复不存在，则另外报错。
@@ -82,20 +81,21 @@ pub async fn create_key_switch_trigger(ctx: &mut Blbc, ks_session_id: String, de
 
             [matchers]
         ".into();
-        model_text.push_str(&policy);
-        let model = match DefaultModel::from_str(&model_text).await {
-            Ok(m) => { m }
-            Err(_)=> {return Err("".into());}
-        };
-        let e = match Enforcer::new(model,()).await {
-            Ok(e) => { e }
-            Err(_)=> {return Err("".into());}
-        };
-        let dept_identity_btree_map: BTreeMap<String, String> = dept_identity.into();
-        match e.enforce((dept_identity_btree_map,"","")) {
-            Ok(false) => { return Err(error_code::CODE_FORBIDDEN.into()); }
-            _ => {}
-        }
+        // TODO: use no-std casbin to edit
+        // model_text.push_str(&policy);
+        // let model = match DefaultModel::from_str(&model_text) {
+        //     Ok(m) => { m }
+        //     Err(_)=> {return Err("".into());}
+        // };
+        // let e = match Enforcer::new(model,()) {
+        //     Ok(e) => { e }
+        //     Err(_)=> {return Err("".into());}
+        // };
+        // let dept_identity_btree_map: BTreeMap<String, String> = dept_identity.into();
+        // match e.enforce((dept_identity_btree_map,"","")) {
+        //     Ok(false) => { return Err(error_code::CODE_FORBIDDEN.into()); }
+        //     _ => {}
+        // }
     }
     // 构建 key_switch_trigger_stored 并存储上链
     let ks_trigger_to_be_stored = KeySwitchTriggerStored {
@@ -146,10 +146,9 @@ pub fn create_key_switch_result(ctx: &mut Blbc, ks_result: KeySwitchResult) -> R
         creator,
         timestamp: timestamp_as_datetime
     };
-    // let mut key: String = "".into();
-    // key.push_str(&ks_session_id).push_str("_").push_str(&(creator.to_string()));
     let key = format!("'{}'_'{:?}'",&ks_session_id,&creator);
     ctx.ks_result_map.insert(key.clone(), &ks_result_stored);
+    ctx.ks_result_keys.push(key.clone());
 
     // 通过事件返回值
     let event_id = format!("ks_'{}'_result",&ks_session_id);
@@ -167,6 +166,21 @@ pub fn create_key_switch_result(ctx: &mut Blbc, ks_result: KeySwitchResult) -> R
     return Ok(());
 }
 
-// pub fn list_key_switch_results_by_id(ctx: &Blbc, ks_session_id: String) -> Result<String,String>{
-//
-// }
+/// 指定 ks_session_id ,任意 creator 来查
+pub fn list_key_switch_results_by_id(ctx: &Blbc, ks_session_id: String) -> Result<Vec<KeySwitchResultStored>,String>{
+    let mut search_result:Vec<KeySwitchResultStored> = Vec::new();
+
+    for ks_result_key in &ctx.ks_result_keys {
+        // 找到匹配 ks_session_id 的 key
+        if (*ks_result_key).starts_with(&ks_session_id){
+            let mut prefix = ks_session_id.clone();
+            prefix.push_str("_");
+            let creator_string = (*ks_result_key).clone().replace(&prefix,"");
+            match ctx.get_key_switch_result_with_accountid_string(ks_session_id.clone(),creator_string){
+                Ok(r) => {search_result.push(r);}
+                Err(msg) => { return Err(msg);}
+            }
+        }
+    }
+    return Ok(search_result);
+}

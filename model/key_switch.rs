@@ -33,14 +33,15 @@ pub struct KeySwitchResult {
     pub key_switch_pk: String,
 }
 
-#[derive(Decode, Encode)]
+
+#[derive(Decode, Encode, PackedLayout, SpreadLayout)]
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 /// KeySwitchResultQuery 表示密钥置换的查询请求
 pub struct KeySwitchResultQuery {
     /// 密钥置换会话 ID
     pub key_switch_session_id: String,
-    /// 密钥置换结果的创建者公钥（Base 64 编码）
-    pub result_creator:String
+    /// 密钥置换结果的创建者公钥
+    pub result_creator: AccountId,
 }
 
 
@@ -77,7 +78,7 @@ pub struct KeySwitchResultStored {
     pub zk_proof: String,
     /// 份额生成者的密钥置换公钥（[64]byte 的 Base64 编码），用于验证份额
     pub key_switch_pk: String,
-    /// 密钥置换响应者的公钥（Base64 编码）
+    /// 密钥置换响应者的公钥
     pub creator: AccountId,
     /// 时间戳
     pub timestamp: ScaleDateTimeLocal,
