@@ -1,7 +1,8 @@
 pub mod args;
-mod builtin;
-mod call;
+pub mod builtin;
+pub mod call;
 pub mod callable_function;
+pub mod func;
 pub mod hashing;
 pub mod native;
 pub mod plugin;

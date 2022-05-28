@@ -6,7 +6,7 @@ pub(crate) mod arithmetic;
 pub(crate) mod array_basic;
 mod bit_field;
 pub(crate) mod blob_basic;
-mod debugging;
+// mod debugging;
 mod fn_basic;
 pub(crate) mod iter_basic;
 mod lang_core;

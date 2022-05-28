@@ -2,7 +2,26 @@
 
 extern crate alloc;
 
+use super::call::FnCallArgs;
+use crate::ast::FnCallHashes;
+use crate::eval::{Caches, GlobalRuntimeState};
+use crate::plugin::PluginFunction;
+use crate::tokenizer::{Token, TokenizeState};
+use crate::types::dynamic::Variant;
+use crate::{
+    calc_fn_hash, Dynamic, Engine, EvalContext, FuncArgs, Module, Position, RhaiResult,
+    RhaiResultOf, StaticVec, VarDefInfo, ERR,
+};
 use core::any::type_name;
+
+use ink_prelude::boxed::Box;
+
+/// Trait that maps to `Send + Sync` only under the `sync` feature.
+#[cfg(feature = "sync")]
+pub trait SendSync: Send + Sync {}
+/// Trait that maps to `Send + Sync` only under the `sync` feature.
+#[cfg(feature = "sync")]
+impl<T: Send + Sync> SendSync for T {}
 
 /// Trait that maps to `Send + Sync` only under the `sync` feature.
 #[cfg(not(feature = "sync"))]
@@ -13,53 +32,40 @@ impl<T> SendSync for T {}
 
 /// Immutable reference-counted container.
 #[cfg(not(feature = "sync"))]
-pub use std::rc::Rc as Shared;
+pub use alloc::rc::Rc as Shared;
 /// Immutable reference-counted container.
 #[cfg(feature = "sync")]
-pub use std::sync::Arc as Shared;
+pub use alloc::sync::Arc as Shared;
 
 /// Synchronized shared object.
 #[cfg(not(feature = "sync"))]
 #[allow(dead_code)]
-pub use std::cell::RefCell as Locked;
+pub use core::cell::RefCell as Locked;
 
 /// Read-only lock guard for synchronized shared object.
 #[cfg(not(feature = "sync"))]
 #[allow(dead_code)]
-pub type LockGuard<'a, T> = std::cell::Ref<'a, T>;
+pub type LockGuard<'a, T> = core::cell::Ref<'a, T>;
 
 /// Mutable lock guard for synchronized shared object.
 #[cfg(not(feature = "sync"))]
 #[allow(dead_code)]
-pub type LockGuardMut<'a, T> = std::cell::RefMut<'a, T>;
+pub type LockGuardMut<'a, T> = core::cell::RefMut<'a, T>;
 
 /// Synchronized shared object.
 #[cfg(feature = "sync")]
 #[allow(dead_code)]
-pub use std::sync::RwLock as Locked;
-
-use crate::{
-    ast::FnCallHashes,
-    engine::Engine,
-    eval::{global_state::GlobalRuntimeState, Caches},
-    module::Module,
-    plugin::PluginFunction,
-    tokenizer::{Position, Token, TokenizeState},
-    types::dynamic::{Dynamic, Variant},
-    EvalContext, FuncArgs, RhaiResult, RhaiResultOf, StaticVec, VarDefInfo, ERR,
-};
-
-use super::{calc_fn_hash, FnCallArgs};
+pub use core::sync::RwLock as Locked;
 
 /// Read-only lock guard for synchronized shared object.
 #[cfg(feature = "sync")]
 #[allow(dead_code)]
-pub type LockGuard<'a, T> = std::sync::RwLockReadGuard<'a, T>;
+pub type LockGuard<'a, T> = core::sync::RwLockReadGuard<'a, T>;
 
 /// Mutable lock guard for synchronized shared object.
 #[cfg(feature = "sync")]
 #[allow(dead_code)]
-pub type LockGuardMut<'a, T> = std::sync::RwLockWriteGuard<'a, T>;
+pub type LockGuardMut<'a, T> = core::sync::RwLockWriteGuard<'a, T>;
 
 /// Context of a native Rust function call.
 #[derive(Debug)]

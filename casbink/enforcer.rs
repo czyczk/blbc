@@ -1,10 +1,11 @@
 extern crate alloc;
 
 use ink_prelude::boxed::Box;
-use ink_prelude::collections::BTreeMap;
 use ink_prelude::format;
 use ink_prelude::string::String;
 use ink_prelude::vec::Vec;
+use rhaink::engine::Engine;
+use rhaink::{Dynamic, Scope};
 
 use super::adapter::Adapter;
 use super::core_api::CoreApi;
@@ -14,7 +15,6 @@ use super::model::Model;
 use super::util::escape_eval;
 use crate::casbink::Result;
 use crate::get_or_err;
-use crate::rhaink::engine::Engine;
 
 // Enforcer is the main interface for authorization enforcement and policy management.
 pub struct Enforcer {

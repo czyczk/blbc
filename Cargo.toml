@@ -5,6 +5,9 @@ authors = ["[your_name] <[your_email]>"]
 edition = "2018"
 resolver = "2"
 
+[workspace]
+members = ["rhaink"]
+
 [dependencies]
 ink_primitives = { version = "3.0.1", default-features = false }
 ink_prelude = { version = "3.0.1", default-features = false }
@@ -45,7 +48,7 @@ crate-type = [
 ]
 
 [features]
-default = ["std"]
+default = ["std", "rhai-features"]
 std = [
     "ink_metadata/std",
     "ink_env/std",
@@ -59,3 +62,20 @@ std = [
     "regex-automata/std",
 ]
 ink-as-dependency = []
+# rhai-features
+# rhai-features = ["only_i32", "no_function", "no_closure", "no_float", "no_optimize", "no_module", "unchecked"]
+# unchecked = []                  # unchecked arithmetic
+# sync = []                       # restrict to only types that implement Send + Sync
+# no_position = []                # do not track position in the parser
+# no_optimize = []                # no script optimizer
+# no_float = []                   # no floating-point
+# f32_float = []                  # set FLOAT=f32
+# only_i32 = []                   # set INT=i32 (useful for 32-bit systems)
+# only_i64 = []                   # set INT=i64 (default) and disable support for all other integer types
+# no_index = []                   # no arrays and indexing
+# no_object = []                  # no custom objects
+# no_function = ["no_closure"]    # no script-defined functions (meaning no closures)
+# no_closure = []                 # no automatic sharing and capture of anonymous functions to external variables
+# no_module = []                  # no modules
+# internals = []                  # expose internal data structures
+# debugging = ["internals"]       # enable debugging

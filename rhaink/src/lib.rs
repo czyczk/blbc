@@ -63,7 +63,7 @@ extern crate alloc;
 // Internal modules
 mod api;
 mod ast;
-mod engine;
+pub mod engine;
 mod eval;
 mod func;
 mod module;

@@ -1,5 +1,11 @@
 //! Module defining macros for developing _plugins_.
 
+pub use super::CallableFunction;
+use super::FnCallArgs;
+pub use crate::{
+    Dynamic, Engine, EvalAltResult, FnAccess, FnNamespace, ImmutableString, Module,
+    NativeCallContext, Position,
+};
 pub use core::{any::TypeId, mem};
 
 pub type RhaiResult = crate::RhaiResult;
@@ -8,8 +14,6 @@ pub type RhaiResult = crate::RhaiResult;
 pub use rhaink_codegen::*;
 #[cfg(features = "no_module")]
 pub use rhaink_codegen::{export_fn, register_exported_fn};
-
-use super::{native::NativeCallContext, FnCallArgs};
 
 /// Trait implemented by a _plugin function_.
 ///

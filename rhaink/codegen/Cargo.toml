@@ -19,11 +19,11 @@ std = [
 metadata = []
 
 [dev-dependencies]
-rhai = { path = "..", version = "1.6", features = ["metadata"] }
+rhaink = { path = "../", version = "1.7.0", features = [] }
 trybuild = "1"
 
 [dependencies]
-ink_prelude = { version = "^3.0.1", default-features = false }
+ink_prelude = { version = "3.0.1", default-features = false }
 proc-macro2 = "1"
 syn = { version = "1.0", features = ["full", "parsing", "printing", "proc-macro", "extra-traits"] }
 quote = "1"

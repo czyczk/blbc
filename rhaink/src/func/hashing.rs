@@ -1,8 +1,7 @@
 //! Module containing utilities to hash functions and function calls.
 
 use core::any::TypeId;
-use core::hash::BuildHasher;
-use core::hash::Hasher;
+use core::hash::{BuildHasher, Hash, Hasher};
 use core::iter::empty;
 
 /// Dummy hash value to map zeros to. This value can be anything.

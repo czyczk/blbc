@@ -1,11 +1,9 @@
-extern crate alloc;
+//! Collection of custom types.
 
-use core::any::type_name;
+use crate::Identifier;
+use core::{any::type_name, fmt};
 
-use alloc::fmt;
 use ink_prelude::collections::BTreeMap;
-
-use crate::rhaink::Identifier;
 
 /// _(internals)_ A custom type.
 /// Exported under the `internals` feature only.
