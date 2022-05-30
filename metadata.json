@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0x89855cd2e4c341510a96300f2be3b598ad7a2bc5e6a37f71cae510c2e77c3286",
+    "hash": "0xd3a40b59d5c862bc43661149d5dc276627e3afa573493327047bffb8969a9e4f",
     "language": "ink! 3.0.1",
     "compiler": "rustc 1.63.0-nightly"
   },
@@ -99,9 +99,9 @@
               "label": "data",
               "type": {
                 "displayName": [
-                  "KeySwitchTriggerStored"
+                  "String"
                 ],
-                "type": 24
+                "type": 1
               }
             }
           ],
