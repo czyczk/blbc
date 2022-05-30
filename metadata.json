@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0x8ff1f447915a19468f520823f769bf6310089267a3a53488beabb53754118469",
+    "hash": "0x49e708e15a70a186d8aa1af428fc7daf37018dc90c7e34b886152b2004684115",
     "language": "ink! 3.0.1",
     "compiler": "rustc 1.63.0-nightly"
   },
@@ -51,6 +51,90 @@
           ],
           "docs": [],
           "label": "ResourceCreated"
+        },
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": false,
+              "label": "event_id",
+              "type": {
+                "displayName": [
+                  "String"
+                ],
+                "type": 1
+              }
+            },
+            {
+              "docs": [],
+              "indexed": false,
+              "label": "auth_session_id",
+              "type": {
+                "displayName": [
+                  "String"
+                ],
+                "type": 1
+              }
+            }
+          ],
+          "docs": [],
+          "label": "AuthCreated"
+        },
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": false,
+              "label": "event_id",
+              "type": {
+                "displayName": [
+                  "String"
+                ],
+                "type": 1
+              }
+            },
+            {
+              "docs": [],
+              "indexed": false,
+              "label": "data",
+              "type": {
+                "displayName": [
+                  "KeySwitchTriggerStored"
+                ],
+                "type": 24
+              }
+            }
+          ],
+          "docs": [],
+          "label": "KSCreated"
+        },
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": false,
+              "label": "event_id",
+              "type": {
+                "displayName": [
+                  "String"
+                ],
+                "type": 1
+              }
+            },
+            {
+              "docs": [],
+              "indexed": false,
+              "label": "value",
+              "type": {
+                "displayName": [
+                  "String"
+                ],
+                "type": 1
+              }
+            }
+          ],
+          "docs": [],
+          "label": "KSResultCreated"
         }
       ],
       "messages": [
@@ -62,7 +146,7 @@
                 "displayName": [
                   "PlainData"
                 ],
-                "type": 18
+                "type": 27
               }
             },
             {
@@ -71,7 +155,7 @@
                 "displayName": [
                   "Option"
                 ],
-                "type": 20
+                "type": 29
               }
             }
           ],
@@ -83,7 +167,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 21
+            "type": 30
           },
           "selector": "0x86a9e072"
         },
@@ -95,7 +179,7 @@
                 "displayName": [
                   "EncryptedData"
                 ],
-                "type": 23
+                "type": 32
               }
             },
             {
@@ -104,7 +188,7 @@
                 "displayName": [
                   "Option"
                 ],
-                "type": 20
+                "type": 29
               }
             }
           ],
@@ -116,7 +200,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 21
+            "type": 30
           },
           "selector": "0x2ce20d00"
         },
@@ -128,7 +212,7 @@
                 "displayName": [
                   "OffchainData"
                 ],
-                "type": 24
+                "type": 33
               }
             },
             {
@@ -137,7 +221,7 @@
                 "displayName": [
                   "Option"
                 ],
-                "type": 20
+                "type": 29
               }
             }
           ],
@@ -149,7 +233,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 21
+            "type": 30
           },
           "selector": "0xde9ab1cc"
         },
@@ -173,7 +257,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 25
+            "type": 34
           },
           "selector": "0x928198d3"
         },
@@ -197,7 +281,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 26
+            "type": 35
           },
           "selector": "0x7eb2815a"
         },
@@ -221,7 +305,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 26
+            "type": 35
           },
           "selector": "0xb9033c7a"
         },
@@ -245,7 +329,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 26
+            "type": 35
           },
           "selector": "0x5e44bbfe"
         },
@@ -266,7 +350,7 @@
                 "displayName": [
                   "bool"
                 ],
-                "type": 27
+                "type": 22
               }
             },
             {
@@ -284,7 +368,7 @@
                 "displayName": [
                   "Option"
                 ],
-                "type": 20
+                "type": 29
               }
             }
           ],
@@ -296,7 +380,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 28
+            "type": 36
           },
           "selector": "0x28c92798"
         },
@@ -308,7 +392,7 @@
                 "displayName": [
                   "QueryConditions"
                 ],
-                "type": 30
+                "type": 38
               }
             },
             {
@@ -329,9 +413,273 @@
             "displayName": [
               "Result"
             ],
-            "type": 28
+            "type": 36
           },
           "selector": "0x8baad8d1"
+        },
+        {
+          "args": [
+            {
+              "label": "auth_session_id",
+              "type": {
+                "displayName": [
+                  "String"
+                ],
+                "type": 1
+              }
+            },
+            {
+              "label": "auth_request",
+              "type": {
+                "displayName": [
+                  "AuthRequest"
+                ],
+                "type": 46
+              }
+            },
+            {
+              "label": "event_id",
+              "type": {
+                "displayName": [
+                  "Option"
+                ],
+                "type": 29
+              }
+            }
+          ],
+          "docs": [],
+          "label": "create_auth_request",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 30
+          },
+          "selector": "0x861ca16d"
+        },
+        {
+          "args": [
+            {
+              "label": "auth_session_id",
+              "type": {
+                "displayName": [
+                  "String"
+                ],
+                "type": 1
+              }
+            },
+            {
+              "label": "auth_response",
+              "type": {
+                "displayName": [
+                  "AuthResponse"
+                ],
+                "type": 47
+              }
+            },
+            {
+              "label": "event_id",
+              "type": {
+                "displayName": [
+                  "Option"
+                ],
+                "type": 29
+              }
+            }
+          ],
+          "docs": [],
+          "label": "create_auth_response",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 30
+          },
+          "selector": "0x3ad608a5"
+        },
+        {
+          "args": [
+            {
+              "label": "auth_session_id",
+              "type": {
+                "displayName": [
+                  "String"
+                ],
+                "type": 1
+              }
+            }
+          ],
+          "docs": [],
+          "label": "get_auth_request",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 48
+          },
+          "selector": "0x90658209"
+        },
+        {
+          "args": [
+            {
+              "label": "auth_session_id",
+              "type": {
+                "displayName": [
+                  "String"
+                ],
+                "type": 1
+              }
+            }
+          ],
+          "docs": [],
+          "label": "get_auth_response",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 49
+          },
+          "selector": "0x08faf0c3"
+        },
+        {
+          "args": [
+            {
+              "label": "page_size",
+              "type": {
+                "displayName": [
+                  "u32"
+                ],
+                "type": 16
+              }
+            },
+            {
+              "label": "bookmark",
+              "type": {
+                "displayName": [
+                  "Option"
+                ],
+                "type": 29
+              }
+            }
+          ],
+          "docs": [],
+          "label": "list_pending_auth_session_ids_by_resource_creator",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 36
+          },
+          "selector": "0x5aafdc3c"
+        },
+        {
+          "args": [
+            {
+              "label": "page_size",
+              "type": {
+                "displayName": [
+                  "u32"
+                ],
+                "type": 16
+              }
+            },
+            {
+              "label": "bookmark",
+              "type": {
+                "displayName": [
+                  "Option"
+                ],
+                "type": 29
+              }
+            },
+            {
+              "label": "is_latest_first",
+              "type": {
+                "displayName": [
+                  "bool"
+                ],
+                "type": 22
+              }
+            }
+          ],
+          "docs": [],
+          "label": "list_auth_session_ids_by_requestor",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 36
+          },
+          "selector": "0x94671382"
+        },
+        {
+          "args": [
+            {
+              "label": "query",
+              "type": {
+                "displayName": [
+                  "KeySwitchResultQuery"
+                ],
+                "type": 50
+              }
+            }
+          ],
+          "docs": [],
+          "label": "get_key_switch_result",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 51
+          },
+          "selector": "0xfcff3b10"
+        },
+        {
+          "args": [
+            {
+              "label": "ks_session_id",
+              "type": {
+                "displayName": [
+                  "String"
+                ],
+                "type": 1
+              }
+            },
+            {
+              "label": "creator_string",
+              "type": {
+                "displayName": [
+                  "String"
+                ],
+                "type": 1
+              }
+            }
+          ],
+          "docs": [],
+          "label": "get_key_switch_result_with_accountid_string",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 51
+          },
+          "selector": "0x9ea806dd"
         }
       ]
     },
@@ -351,19 +699,19 @@
             "layout": {
               "cell": {
                 "key": "0x0100000000000000000000000000000000000000000000000000000000000000",
-                "ty": 2
+                "ty": 0
               }
             },
-            "name": "res_map"
+            "name": "auth_session_ids"
           },
           {
             "layout": {
               "cell": {
                 "key": "0x0200000000000000000000000000000000000000000000000000000000000000",
-                "ty": 7
+                "ty": 0
               }
             },
-            "name": "res_metadata_map"
+            "name": "ks_result_keys"
           },
           {
             "layout": {
@@ -372,16 +720,70 @@
                 "ty": 2
               }
             },
-            "name": "res_key_map"
+            "name": "res_map"
           },
           {
             "layout": {
               "cell": {
                 "key": "0x0400000000000000000000000000000000000000000000000000000000000000",
+                "ty": 7
+              }
+            },
+            "name": "res_metadata_map"
+          },
+          {
+            "layout": {
+              "cell": {
+                "key": "0x0500000000000000000000000000000000000000000000000000000000000000",
+                "ty": 2
+              }
+            },
+            "name": "res_key_map"
+          },
+          {
+            "layout": {
+              "cell": {
+                "key": "0x0600000000000000000000000000000000000000000000000000000000000000",
                 "ty": 17
               }
             },
             "name": "res_policy_map"
+          },
+          {
+            "layout": {
+              "cell": {
+                "key": "0x0700000000000000000000000000000000000000000000000000000000000000",
+                "ty": 18
+              }
+            },
+            "name": "auth_request_map"
+          },
+          {
+            "layout": {
+              "cell": {
+                "key": "0x0800000000000000000000000000000000000000000000000000000000000000",
+                "ty": 20
+              }
+            },
+            "name": "auth_response_map"
+          },
+          {
+            "layout": {
+              "cell": {
+                "key": "0x0900000000000000000000000000000000000000000000000000000000000000",
+                "ty": 23
+              }
+            },
+            "name": "ks_trigger_map"
+          },
+          {
+            "layout": {
+              "cell": {
+                "key": "0x0a00000000000000000000000000000000000000000000000000000000000000",
+                "ty": 25
+              }
+            },
+            "name": "ks_result_map"
           }
         ]
       }
@@ -744,8 +1146,327 @@
             "composite": {
               "fields": [
                 {
+                  "name": "offset_key",
+                  "type": 5,
+                  "typeName": "Key"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "K",
+              "type": 1
+            },
+            {
+              "name": "V",
+              "type": 19
+            }
+          ],
+          "path": [
+            "ink_storage",
+            "lazy",
+            "mapping",
+            "Mapping"
+          ]
+        }
+      },
+      {
+        "id": 19,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "auth_session_id",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "resource_id",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "extensions",
+                  "type": 11,
+                  "typeName": "BTreeMap<String, String>"
+                },
+                {
+                  "name": "creator",
+                  "type": 14,
+                  "typeName": "AccountId"
+                },
+                {
+                  "name": "timestamp",
+                  "type": 15,
+                  "typeName": "ScaleDateTimeLocal"
+                }
+              ]
+            }
+          },
+          "path": [
+            "blbc",
+            "model",
+            "auth",
+            "AuthRequestStored"
+          ]
+        }
+      },
+      {
+        "id": 20,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "offset_key",
+                  "type": 5,
+                  "typeName": "Key"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "K",
+              "type": 1
+            },
+            {
+              "name": "V",
+              "type": 21
+            }
+          ],
+          "path": [
+            "ink_storage",
+            "lazy",
+            "mapping",
+            "Mapping"
+          ]
+        }
+      },
+      {
+        "id": 21,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "auth_session_id",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "result",
+                  "type": 22,
+                  "typeName": "bool"
+                },
+                {
+                  "name": "extensions",
+                  "type": 11,
+                  "typeName": "BTreeMap<String, String>"
+                },
+                {
+                  "name": "creator",
+                  "type": 14,
+                  "typeName": "AccountId"
+                },
+                {
+                  "name": "timestamp",
+                  "type": 15,
+                  "typeName": "ScaleDateTimeLocal"
+                }
+              ]
+            }
+          },
+          "path": [
+            "blbc",
+            "model",
+            "auth",
+            "AuthResponseStored"
+          ]
+        }
+      },
+      {
+        "id": 22,
+        "type": {
+          "def": {
+            "primitive": "bool"
+          }
+        }
+      },
+      {
+        "id": 23,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "offset_key",
+                  "type": 5,
+                  "typeName": "Key"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "K",
+              "type": 1
+            },
+            {
+              "name": "V",
+              "type": 24
+            }
+          ],
+          "path": [
+            "ink_storage",
+            "lazy",
+            "mapping",
+            "Mapping"
+          ]
+        }
+      },
+      {
+        "id": 24,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "key_switch_session_id",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "resource_id",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "auth_session_id",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "creator",
+                  "type": 14,
+                  "typeName": "AccountId"
+                },
+                {
+                  "name": "key_switch_pk",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "timestamp",
+                  "type": 15,
+                  "typeName": "ScaleDateTimeLocal"
+                },
+                {
+                  "name": "validation_result",
+                  "type": 22,
+                  "typeName": "bool"
+                }
+              ]
+            }
+          },
+          "path": [
+            "blbc",
+            "model",
+            "key_switch",
+            "KeySwitchTriggerStored"
+          ]
+        }
+      },
+      {
+        "id": 25,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "offset_key",
+                  "type": 5,
+                  "typeName": "Key"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "K",
+              "type": 1
+            },
+            {
+              "name": "V",
+              "type": 26
+            }
+          ],
+          "path": [
+            "ink_storage",
+            "lazy",
+            "mapping",
+            "Mapping"
+          ]
+        }
+      },
+      {
+        "id": 26,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "key_switch_session_id",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "share",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "zk_proof",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "key_switch_pk",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "creator",
+                  "type": 14,
+                  "typeName": "AccountId"
+                },
+                {
+                  "name": "timestamp",
+                  "type": 15,
+                  "typeName": "ScaleDateTimeLocal"
+                }
+              ]
+            }
+          },
+          "path": [
+            "blbc",
+            "model",
+            "key_switch",
+            "KeySwitchResultStored"
+          ]
+        }
+      },
+      {
+        "id": 27,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
                   "name": "metadata",
-                  "type": 19,
+                  "type": 28,
                   "typeName": "ResMetadata"
                 },
                 {
@@ -765,7 +1486,7 @@
         }
       },
       {
-        "id": 19,
+        "id": 28,
         "type": {
           "def": {
             "composite": {
@@ -807,7 +1528,7 @@
         }
       },
       {
-        "id": 20,
+        "id": 29,
         "type": {
           "def": {
             "variant": {
@@ -840,7 +1561,7 @@
         }
       },
       {
-        "id": 21,
+        "id": 30,
         "type": {
           "def": {
             "variant": {
@@ -848,7 +1569,7 @@
                 {
                   "fields": [
                     {
-                      "type": 22
+                      "type": 31
                     }
                   ],
                   "index": 0,
@@ -869,7 +1590,7 @@
           "params": [
             {
               "name": "T",
-              "type": 22
+              "type": 31
             },
             {
               "name": "E",
@@ -882,7 +1603,7 @@
         }
       },
       {
-        "id": 22,
+        "id": 31,
         "type": {
           "def": {
             "tuple": []
@@ -890,14 +1611,14 @@
         }
       },
       {
-        "id": 23,
+        "id": 32,
         "type": {
           "def": {
             "composite": {
               "fields": [
                 {
                   "name": "metadata",
-                  "type": 19,
+                  "type": 28,
                   "typeName": "ResMetadata"
                 },
                 {
@@ -927,14 +1648,14 @@
         }
       },
       {
-        "id": 24,
+        "id": 33,
         "type": {
           "def": {
             "composite": {
               "fields": [
                 {
                   "name": "metadata",
-                  "type": 19,
+                  "type": 28,
                   "typeName": "ResMetadata"
                 },
                 {
@@ -964,7 +1685,7 @@
         }
       },
       {
-        "id": 25,
+        "id": 34,
         "type": {
           "def": {
             "variant": {
@@ -1006,7 +1727,7 @@
         }
       },
       {
-        "id": 26,
+        "id": 35,
         "type": {
           "def": {
             "variant": {
@@ -1048,15 +1769,7 @@
         }
       },
       {
-        "id": 27,
-        "type": {
-          "def": {
-            "primitive": "bool"
-          }
-        }
-      },
-      {
-        "id": 28,
+        "id": 36,
         "type": {
           "def": {
             "variant": {
@@ -1064,7 +1777,7 @@
                 {
                   "fields": [
                     {
-                      "type": 29
+                      "type": 37
                     }
                   ],
                   "index": 0,
@@ -1085,7 +1798,7 @@
           "params": [
             {
               "name": "T",
-              "type": 29
+              "type": 37
             },
             {
               "name": "E",
@@ -1098,7 +1811,7 @@
         }
       },
       {
-        "id": 29,
+        "id": 37,
         "type": {
           "def": {
             "composite": {
@@ -1125,7 +1838,7 @@
         }
       },
       {
-        "id": 30,
+        "id": 38,
         "type": {
           "def": {
             "variant": {
@@ -1133,7 +1846,7 @@
                 {
                   "fields": [
                     {
-                      "type": 31,
+                      "type": 39,
                       "typeName": "DocumentQueryConditions"
                     }
                   ],
@@ -1143,7 +1856,7 @@
                 {
                   "fields": [
                     {
-                      "type": 37,
+                      "type": 45,
                       "typeName": "EntityAssetQueryConditions"
                     }
                   ],
@@ -1162,34 +1875,34 @@
         }
       },
       {
-        "id": 31,
+        "id": 39,
         "type": {
           "def": {
             "composite": {
               "fields": [
                 {
                   "name": "common_query_conditions",
-                  "type": 32,
+                  "type": 40,
                   "typeName": "CommonQueryConditions"
                 },
                 {
                   "name": "document_type",
-                  "type": 35,
+                  "type": 43,
                   "typeName": "Option<DocumentType>"
                 },
                 {
                   "name": "preceding_document_id",
-                  "type": 20,
+                  "type": 29,
                   "typeName": "Option<String>"
                 },
                 {
                   "name": "head_document_id",
-                  "type": 20,
+                  "type": 29,
                   "typeName": "Option<String>"
                 },
                 {
                   "name": "entity_asset_id",
-                  "type": 20,
+                  "type": 29,
                   "typeName": "Option<String>"
                 }
               ]
@@ -1204,54 +1917,54 @@
         }
       },
       {
-        "id": 32,
+        "id": 40,
         "type": {
           "def": {
             "composite": {
               "fields": [
                 {
                   "name": "is_desc",
-                  "type": 27,
+                  "type": 22,
                   "typeName": "bool"
                 },
                 {
                   "name": "resource_id",
-                  "type": 20,
+                  "type": 29,
                   "typeName": "Option<String>"
                 },
                 {
                   "name": "is_name_exact",
-                  "type": 33,
+                  "type": 41,
                   "typeName": "Option<bool>"
                 },
                 {
                   "name": "name",
-                  "type": 20,
+                  "type": 29,
                   "typeName": "Option<String>"
                 },
                 {
                   "name": "is_time_exact",
-                  "type": 33,
+                  "type": 41,
                   "typeName": "Option<bool>"
                 },
                 {
                   "name": "time",
-                  "type": 34,
+                  "type": 42,
                   "typeName": "Option<ScaleDateTimeLocal>"
                 },
                 {
                   "name": "time_after_inclusive",
-                  "type": 34,
+                  "type": 42,
                   "typeName": "Option<ScaleDateTimeLocal>"
                 },
                 {
                   "name": "time_before_exclusive",
-                  "type": 34,
+                  "type": 42,
                   "typeName": "Option<ScaleDateTimeLocal>"
                 },
                 {
                   "name": "last_resource_id",
-                  "type": 20,
+                  "type": 29,
                   "typeName": "Option<String>"
                 }
               ]
@@ -1266,7 +1979,7 @@
         }
       },
       {
-        "id": 33,
+        "id": 41,
         "type": {
           "def": {
             "variant": {
@@ -1278,7 +1991,7 @@
                 {
                   "fields": [
                     {
-                      "type": 27
+                      "type": 22
                     }
                   ],
                   "index": 1,
@@ -1290,7 +2003,7 @@
           "params": [
             {
               "name": "T",
-              "type": 27
+              "type": 22
             }
           ],
           "path": [
@@ -1299,7 +2012,7 @@
         }
       },
       {
-        "id": 34,
+        "id": 42,
         "type": {
           "def": {
             "variant": {
@@ -1332,7 +2045,7 @@
         }
       },
       {
-        "id": 35,
+        "id": 43,
         "type": {
           "def": {
             "variant": {
@@ -1344,7 +2057,7 @@
                 {
                   "fields": [
                     {
-                      "type": 36
+                      "type": 44
                     }
                   ],
                   "index": 1,
@@ -1356,7 +2069,7 @@
           "params": [
             {
               "name": "T",
-              "type": 36
+              "type": 44
             }
           ],
           "path": [
@@ -1365,7 +2078,7 @@
         }
       },
       {
-        "id": 36,
+        "id": 44,
         "type": {
           "def": {
             "variant": {
@@ -1402,19 +2115,19 @@
         }
       },
       {
-        "id": 37,
+        "id": 45,
         "type": {
           "def": {
             "composite": {
               "fields": [
                 {
                   "name": "common_query_conditions",
-                  "type": 32,
+                  "type": 40,
                   "typeName": "CommonQueryConditions"
                 },
                 {
                   "name": "design_document_id",
-                  "type": 20,
+                  "type": 29,
                   "typeName": "Option<String>"
                 }
               ]
@@ -1425,6 +2138,218 @@
             "model",
             "query",
             "EntityAssetQueryConditions"
+          ]
+        }
+      },
+      {
+        "id": 46,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "resource_id",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "extensions",
+                  "type": 11,
+                  "typeName": "BTreeMap<String, String>"
+                }
+              ]
+            }
+          },
+          "path": [
+            "blbc",
+            "model",
+            "auth",
+            "AuthRequest"
+          ]
+        }
+      },
+      {
+        "id": 47,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "auth_session_id",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "result",
+                  "type": 22,
+                  "typeName": "bool"
+                },
+                {
+                  "name": "extensions",
+                  "type": 11,
+                  "typeName": "BTreeMap<String, String>"
+                }
+              ]
+            }
+          },
+          "path": [
+            "blbc",
+            "model",
+            "auth",
+            "AuthResponse"
+          ]
+        }
+      },
+      {
+        "id": 48,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 19
+                    }
+                  ],
+                  "index": 0,
+                  "name": "Ok"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 1
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Err"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 19
+            },
+            {
+              "name": "E",
+              "type": 1
+            }
+          ],
+          "path": [
+            "Result"
+          ]
+        }
+      },
+      {
+        "id": 49,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 21
+                    }
+                  ],
+                  "index": 0,
+                  "name": "Ok"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 1
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Err"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 21
+            },
+            {
+              "name": "E",
+              "type": 1
+            }
+          ],
+          "path": [
+            "Result"
+          ]
+        }
+      },
+      {
+        "id": 50,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "key_switch_session_id",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "result_creator",
+                  "type": 14,
+                  "typeName": "AccountId"
+                }
+              ]
+            }
+          },
+          "path": [
+            "blbc",
+            "model",
+            "key_switch",
+            "KeySwitchResultQuery"
+          ]
+        }
+      },
+      {
+        "id": 51,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 26
+                    }
+                  ],
+                  "index": 0,
+                  "name": "Ok"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 1
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Err"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 26
+            },
+            {
+              "name": "E",
+              "type": 1
+            }
+          ],
+          "path": [
+            "Result"
           ]
         }
       }
