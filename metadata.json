@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0x4c079f4f3eb72a0fa65319c0cb34ffa87f9f4090ab970dec9ffabb4a27c1abb1",
+    "hash": "0x89855cd2e4c341510a96300f2be3b598ad7a2bc5e6a37f71cae510c2e77c3286",
     "language": "ink! 3.0.1",
     "compiler": "rustc 1.63.0-nightly"
   },
@@ -698,6 +698,30 @@
             "type": 53
           },
           "selector": "0xfcff3b10"
+        },
+        {
+          "args": [
+            {
+              "label": "ks_session_id",
+              "type": {
+                "displayName": [
+                  "String"
+                ],
+                "type": 1
+              }
+            }
+          ],
+          "docs": [],
+          "label": "list_key_switch_results_by_id",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 54
+          },
+          "selector": "0x04fec934"
         },
         {
           "args": [
@@ -2471,6 +2495,58 @@
           "path": [
             "Result"
           ]
+        }
+      },
+      {
+        "id": 54,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 55
+                    }
+                  ],
+                  "index": 0,
+                  "name": "Ok"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 1
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Err"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 55
+            },
+            {
+              "name": "E",
+              "type": 1
+            }
+          ],
+          "path": [
+            "Result"
+          ]
+        }
+      },
+      {
+        "id": 55,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 26
+            }
+          }
         }
       }
     ]
