@@ -1,11 +1,12 @@
 extern crate alloc;
-use alloc::collections::BTreeMap;
+use super::{datetime::ScaleDateTimeLocal, ManualJsonfiable};
 use crate::alloc::string::ToString;
+use alloc::collections::BTreeMap;
 use ink_env::AccountId;
+use ink_prelude::format;
 use ink_prelude::string::String;
-use scale::{Decode, Encode};
 use ink_storage::traits::{PackedLayout, SpreadLayout};
-use super::datetime::ScaleDateTimeLocal;
+use scale::{Decode, Encode};
 
 #[derive(Decode, Encode)]
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
@@ -16,7 +17,7 @@ pub struct KeySwitchTrigger {
     /// 授权会话 ID。为零值时可忽略。
     pub auth_session_id: String,
     /// 访问申请者用于密钥置换的公钥（[64]byte 的 Base64 编码）
-    pub key_switch_pk: String
+    pub key_switch_pk: String,
 }
 
 #[derive(Decode, Encode)]
@@ -33,7 +34,6 @@ pub struct KeySwitchResult {
     pub key_switch_pk: String,
 }
 
-
 #[derive(Decode, Encode, PackedLayout, SpreadLayout)]
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 /// KeySwitchResultQuery 表示密钥置换的查询请求
@@ -43,7 +43,6 @@ pub struct KeySwitchResultQuery {
     /// 密钥置换结果的创建者公钥
     pub result_creator: AccountId,
 }
-
 
 #[derive(Debug, Clone, Eq, PartialEq, Decode, Encode, PackedLayout, SpreadLayout, Hash)]
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
@@ -62,9 +61,27 @@ pub struct KeySwitchTriggerStored {
     /// 时间戳
     pub timestamp: ScaleDateTimeLocal,
     /// 访问申请是否通过验证
-    pub validation_result: bool
+    pub validation_result: bool,
 }
 
+impl ManualJsonfiable for KeySwitchTriggerStored {
+    fn to_json_string(&self) -> String {
+        let mut result: String = "{".into();
+        result.push_str(&format!(
+            "\"keySwitchSessionId\":\"{}\",",
+            self.key_switch_session_id
+        ));
+        result.push_str(&format!("\"resourceId\":\"{}\",", self.resource_id));
+        result.push_str(&format!("\"authSessionId\":\"{}\",", self.auth_session_id));
+        result.push_str(&format!("\"creator\":\"{:?}\",", self.creator));
+        result.push_str(&format!("\"keySwitchPk\":\"{}\",", self.key_switch_pk));
+        result.push_str(&format!("\"timestamp\":\"{}\",", self.timestamp));
+        result.push_str(&format!("\"validationResult\":{}", self.validation_result));
+        result.push_str("}");
+
+        result
+    }
+}
 
 #[derive(Debug, Clone, Eq, PartialEq, Decode, Encode, PackedLayout, SpreadLayout)]
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
@@ -84,7 +101,6 @@ pub struct KeySwitchResultStored {
     pub timestamp: ScaleDateTimeLocal,
 }
 
-
 #[derive(Debug, Clone, Eq, PartialEq, Decode, Encode, PackedLayout, SpreadLayout, Hash)]
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 /// DepartmentIdentityStored 表示由链码返回的部门身份信息
@@ -96,17 +112,16 @@ pub struct DepartmentIdentityStored {
     /// 部门名称
     pub dept_name: String,
     /// 上级部门名称
-    pub super_dept_name: String
+    pub super_dept_name: String,
 }
 
-
-impl Into<BTreeMap<String,String>> for DepartmentIdentityStored {
-    fn into(self) -> BTreeMap<String,String> {
+impl Into<BTreeMap<String, String>> for DepartmentIdentityStored {
+    fn into(self) -> BTreeMap<String, String> {
         return BTreeMap::from([
             ("dept_type".into(), self.dept_type),
             ("dept_level".into(), self.dept_level.to_string()),
-            ("dept_name".into(),self.dept_name),
-            ("super_dept_name".into(),self.super_dept_name)
+            ("dept_name".into(), self.dept_name),
+            ("super_dept_name".into(), self.super_dept_name),
         ]);
     }
 }
