@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0x49e708e15a70a186d8aa1af428fc7daf37018dc90c7e34b886152b2004684115",
+    "hash": "0x4c079f4f3eb72a0fa65319c0cb34ffa87f9f4090ab970dec9ffabb4a27c1abb1",
     "language": "ink! 3.0.1",
     "compiler": "rustc 1.63.0-nightly"
   },
@@ -627,12 +627,63 @@
         {
           "args": [
             {
+              "label": "ks_session_id",
+              "type": {
+                "displayName": [
+                  "String"
+                ],
+                "type": 1
+              }
+            },
+            {
+              "label": "dept_identity",
+              "type": {
+                "displayName": [
+                  "DepartmentIdentityStored"
+                ],
+                "type": 50
+              }
+            },
+            {
+              "label": "ks_trigger",
+              "type": {
+                "displayName": [
+                  "KeySwitchTrigger"
+                ],
+                "type": 51
+              }
+            },
+            {
+              "label": "event_id",
+              "type": {
+                "displayName": [
+                  "String"
+                ],
+                "type": 1
+              }
+            }
+          ],
+          "docs": [],
+          "label": "create_key_switch_trigger",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 30
+          },
+          "selector": "0x6f2211f3"
+        },
+        {
+          "args": [
+            {
               "label": "query",
               "type": {
                 "displayName": [
                   "KeySwitchResultQuery"
                 ],
-                "type": 50
+                "type": 52
               }
             }
           ],
@@ -644,7 +695,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 51
+            "type": 53
           },
           "selector": "0xfcff3b10"
         },
@@ -677,7 +728,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 51
+            "type": 53
           },
           "selector": "0x9ea806dd"
         }
@@ -2291,6 +2342,75 @@
             "composite": {
               "fields": [
                 {
+                  "name": "dept_type",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "dept_level",
+                  "type": 4,
+                  "typeName": "u8"
+                },
+                {
+                  "name": "dept_name",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "super_dept_name",
+                  "type": 1,
+                  "typeName": "String"
+                }
+              ]
+            }
+          },
+          "path": [
+            "blbc",
+            "model",
+            "key_switch",
+            "DepartmentIdentityStored"
+          ]
+        }
+      },
+      {
+        "id": 51,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "resource_id",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "auth_session_id",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "key_switch_pk",
+                  "type": 1,
+                  "typeName": "String"
+                }
+              ]
+            }
+          },
+          "path": [
+            "blbc",
+            "model",
+            "key_switch",
+            "KeySwitchTrigger"
+          ]
+        }
+      },
+      {
+        "id": 52,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
                   "name": "key_switch_session_id",
                   "type": 1,
                   "typeName": "String"
@@ -2312,7 +2432,7 @@
         }
       },
       {
-        "id": 51,
+        "id": 53,
         "type": {
           "def": {
             "variant": {
