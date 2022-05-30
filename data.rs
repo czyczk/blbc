@@ -334,6 +334,7 @@ pub fn list_resource_ids_by_conditions(
     query_conditions: QueryConditions,
     page_size: u64,
 ) -> Result<IDsWithPagination, String> {
+    println!("list_resource_ids_by_conditions 查询参数：{:?}",query_conditions);
     // 检查与准备变量
     if page_size < 1 {
         return Err("page_size 应为正整数".into());
@@ -354,16 +355,13 @@ pub fn list_resource_ids_by_conditions(
 
             // 书签为空表示从头查起
             let mut bookmark_is_found = false;
-            match &document_query_conditions.common_query_conditions.last_resource_id {
-                None => {
-                    bookmark_string = "".into();
+            if document_query_conditions.common_query_conditions.last_resource_id.is_none(){
+                bookmark_string = "".into();
+                bookmark_is_found = true;
+            }else {
+                bookmark_string = document_query_conditions.common_query_conditions.last_resource_id.unwrap().clone();
+                if bookmark_string.chars().count() == 0 {
                     bookmark_is_found = true;
-                }
-                Some(id) => {
-                    bookmark_string = (*id).clone();
-                    if (*id).chars().count() == 0 {
-                        bookmark_is_found = true;
-                    }
                 }
             }
 
@@ -402,19 +400,15 @@ pub fn list_resource_ids_by_conditions(
 
             // 书签为空表示从头查起
             let mut bookmark_is_found = false;
-            match &entity_asset_query_conditions.common_query_conditions.last_resource_id {
-                None => {
-                    bookmark_string = "".into();
+            if entity_asset_query_conditions.common_query_conditions.last_resource_id.is_none(){
+                bookmark_string = "".into();
+                bookmark_is_found = true;
+            }else {
+                bookmark_string = entity_asset_query_conditions.common_query_conditions.last_resource_id.unwrap().clone();
+                if bookmark_string.chars().count() == 0 {
                     bookmark_is_found = true;
                 }
-                Some(id) => {
-                    bookmark_string = (*id).clone();
-                    if (*id).chars().count() == 0 {
-                        bookmark_is_found = true;
-                    }
-                }
             }
-
             // 遍历并收集结果
             let mut eligible_ids_num = 0;
             for resource_id in resource_ids {
