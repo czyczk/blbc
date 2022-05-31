@@ -3,8 +3,8 @@ use crate::blbc::{Blbc, KSCreated, KSResultCreated, ResourceCreated, EVENT_ID_FO
 use crate::error_code;
 use crate::model::ManualJsonfiable;
 use alloc::collections::BTreeMap;
-use scale::{Decode, Encode};
 use ink_prelude::string::String;
+use scale::{Decode, Encode};
 // use crate::casbink::model::default_model::DefaultModel;
 use crate::model::datetime::ScaleDateTimeLocal;
 use crate::model::key_switch::{
@@ -190,12 +190,12 @@ pub fn create_key_switch_result(ctx: &mut Blbc, ks_result: KeySwitchResult) -> R
 
     // 获取 key 并存储上链
     let creator_as_base64: String = base64::encode(creator.encode());
-    let key = get_key_for_key_switch_response(&ks_session_id,&creator_as_base64);
+    let key = get_key_for_key_switch_response(&ks_session_id, &creator_as_base64);
     ctx.ks_result_map.insert(key.clone(), &ks_result_stored);
     ctx.ks_result_keys.push(key.clone());
 
     // 通过事件返回值
-    let event_id = format!("ks_'{}'_result", &ks_session_id);
+    let event_id = get_key_prefix_for_key_switch_response(&ks_session_id);
 
     // TODO: Temporarily use ResourceCreated for debugging. Actually it should be KSResultCreated.
     ctx.env().emit_event(ResourceCreated {
@@ -224,18 +224,23 @@ pub fn list_key_switch_results_by_id(
 
     for ks_result_key in &ctx.ks_result_keys {
         // 找到匹配 ks_session_id 的 key
-        if ks_result_key.starts_with(&ks_session_id) {
-            let mut prefix = ks_session_id.clone();
-            prefix.push_str("_");
-            let creator_string = ks_result_key.clone().replace(&prefix, "");
-            match get_key_switch_result_with_accountid_string(ctx,ks_session_id.clone(), creator_string)
-            {
-                Ok(r) => {
-                    search_result.push(r);
-                }
-                Err(msg) => {
-                    return Err(msg);
-                }
+        if !ks_result_key.starts_with(&ks_session_id) {
+            continue;
+        }
+
+        let mut prefix = ks_session_id.clone();
+        prefix.push_str("_");
+        let creator_string = ks_result_key.clone().replace(&prefix, "");
+        match get_key_switch_result_with_accountid_string(
+            ctx,
+            ks_session_id.clone(),
+            creator_string,
+        ) {
+            Ok(r) => {
+                search_result.push(r);
+            }
+            Err(msg) => {
+                return Err(msg);
             }
         }
     }
@@ -243,9 +248,13 @@ pub fn list_key_switch_results_by_id(
 }
 
 /// 辅助函数 用来拼接字符串 ${ks_session_id}_${creator_as_base64} 获取 key
-fn get_key_for_key_switch_response(ks_session_id: &String, creator_as_base64: &String) -> String{
+fn get_key_for_key_switch_response(ks_session_id: &str, creator_as_base64: &str) -> String {
     let key = format!("{}_{}", ks_session_id, creator_as_base64);
     return key;
+}
+
+fn get_key_prefix_for_key_switch_response(ks_session_id: &str) -> String {
+    format!("ks_{}_result", ks_session_id)
 }
 
 /// 辅助函数 使用 ks_session_id 和 creator_string 来查询指定的 ks_result
@@ -257,7 +266,7 @@ fn get_key_switch_result_with_accountid_string(
     ink_env::debug_println!("---");
     ink_env::debug_println!("get_key_switch_result_with_accountid_string");
 
-    let key = get_key_for_key_switch_response(&ks_session_id,&creator_string);
+    let key = get_key_for_key_switch_response(&ks_session_id, &creator_string);
 
     // 读 KeySwitchResultStored 并返回，若未找到则返回 CODE_NOT_FOUND
     let ks_result_stored = match ctx.ks_result_map.get(&key) {
