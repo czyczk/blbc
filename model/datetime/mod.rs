@@ -11,8 +11,8 @@ use scale::{Decode, Encode};
 
 #[derive(Clone, Eq, Ord, Hash)]
 pub struct ScaleDateTimeLocal {
-    datetime: DateTime<FixedOffset>,
-    rfc3339_str: String,
+    pub datetime: DateTime<FixedOffset>,
+    pub rfc3339_str: String,
 }
 
 impl ScaleDateTimeLocal {

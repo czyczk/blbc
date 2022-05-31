@@ -73,9 +73,16 @@ impl ManualJsonfiable for KeySwitchTriggerStored {
         ));
         result.push_str(&format!("\"resourceId\":\"{}\",", self.resource_id));
         result.push_str(&format!("\"authSessionId\":\"{}\",", self.auth_session_id));
-        result.push_str(&format!("\"creator\":\"{:?}\",", self.creator));
+        let creator_bytes = self.creator.encode();
+        // TODO: encode as Base64. Actually it should be encoded as Ss58 but I don't know how for
+        // now.
+        let creator_as_base64: String = base64::encode(creator_bytes);
+        result.push_str(&format!("\"creator\":\"{}\",", creator_as_base64));
         result.push_str(&format!("\"keySwitchPk\":\"{}\",", self.key_switch_pk));
-        result.push_str(&format!("\"timestamp\":\"{}\",", self.timestamp));
+        result.push_str(&format!(
+            "\"timestamp\":\"{}\",",
+            self.timestamp.rfc3339_str,
+        ));
         result.push_str(&format!("\"validationResult\":{}", self.validation_result));
         result.push_str("}");
 

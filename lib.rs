@@ -17,8 +17,8 @@ mod blbc {
     use crate::model::auth::{AuthRequest, AuthRequestStored, AuthResponse, AuthResponseStored};
     use crate::model::datetime::ScaleDateTimeLocal;
     use crate::model::key_switch::{
-        DepartmentIdentityStored, KeySwitchResultQuery, KeySwitchResultStored, KeySwitchTrigger,
-        KeySwitchTriggerStored,
+        DepartmentIdentityStored, KeySwitchResult, KeySwitchResultQuery, KeySwitchResultStored,
+        KeySwitchTrigger, KeySwitchTriggerStored,
     };
     use crate::model::query::QueryConditions;
     use crate::{
@@ -300,6 +300,14 @@ mod blbc {
                 ks_trigger,
                 event_id,
             )
+        }
+
+        #[ink(message)]
+        pub fn create_key_switch_result(
+            &mut self,
+            ks_result: KeySwitchResult,
+        ) -> Result<(), String> {
+            key_switch::create_key_switch_result(self, ks_result)
         }
 
         #[ink(message)]

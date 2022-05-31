@@ -1,5 +1,5 @@
 extern crate alloc;
-use crate::blbc::{Blbc, KSCreated, KSResultCreated, EVENT_ID_FOR_RETURNED_VALUE};
+use crate::blbc::{Blbc, KSCreated, KSResultCreated, ResourceCreated, EVENT_ID_FOR_RETURNED_VALUE};
 use crate::error_code;
 use crate::model::ManualJsonfiable;
 use alloc::collections::BTreeMap;
@@ -146,18 +146,20 @@ pub fn create_key_switch_trigger(
 
     // 通过事件返回值
     let ks_trigger_to_be_stored_as_json = ks_trigger_to_be_stored.to_json_string();
-    ctx.env().emit_event(KSCreated {
+    // TODO: Temporarily use ResourceCreated for debugging. Actually it should be KSCreated.
+    ctx.env().emit_event(ResourceCreated {
         event_id: EVENT_ID_FOR_RETURNED_VALUE.into(),
-        data: ks_trigger_to_be_stored_as_json.clone(),
+        resource_id: ks_trigger_to_be_stored_as_json.clone(),
     });
 
-    ctx.env().emit_event(KSCreated {
+    ctx.env().emit_event(ResourceCreated {
         event_id,
-        data: ks_trigger_to_be_stored_as_json,
+        resource_id: ks_trigger_to_be_stored_as_json,
     });
 
     return Ok(());
 }
+
 pub fn create_key_switch_result(ctx: &mut Blbc, ks_result: KeySwitchResult) -> Result<(), String> {
     // 获取 ks_session_id
     let ks_session_id = ks_result.key_switch_session_id.clone();
@@ -190,14 +192,15 @@ pub fn create_key_switch_result(ctx: &mut Blbc, ks_result: KeySwitchResult) -> R
     // 通过事件返回值
     let event_id = format!("ks_'{}'_result", &ks_session_id);
 
-    ctx.env().emit_event(KSResultCreated {
+    // TODO: Temporarily use ResourceCreated for debugging. Actually it should be KSResultCreated.
+    ctx.env().emit_event(ResourceCreated {
         event_id: EVENT_ID_FOR_RETURNED_VALUE.into(),
-        value: key.clone(),
+        resource_id: key.clone(),
     });
 
-    ctx.env().emit_event(KSResultCreated {
+    ctx.env().emit_event(ResourceCreated {
         event_id,
-        value: key,
+        resource_id: key,
     });
 
     return Ok(());
