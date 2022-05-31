@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0xdb0223aedc7e4c6511fde18e1a0e0673a0831b3a75eeaefd4e28536e3e646abb",
+    "hash": "0x8e99ae7d33f3d22170d4e685e3dcec93c628c9f2b11985b76046b64c3181bcac",
     "language": "ink! 3.0.1",
     "compiler": "rustc 1.63.0-nightly"
   },
@@ -678,12 +678,36 @@
         {
           "args": [
             {
+              "label": "ks_result",
+              "type": {
+                "displayName": [
+                  "KeySwitchResult"
+                ],
+                "type": 52
+              }
+            }
+          ],
+          "docs": [],
+          "label": "create_key_switch_result",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 30
+          },
+          "selector": "0x2c6b5922"
+        },
+        {
+          "args": [
+            {
               "label": "query",
               "type": {
                 "displayName": [
                   "KeySwitchResultQuery"
                 ],
-                "type": 52
+                "type": 53
               }
             }
           ],
@@ -695,7 +719,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 53
+            "type": 54
           },
           "selector": "0xfcff3b10"
         },
@@ -719,7 +743,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 54
+            "type": 55
           },
           "selector": "0x04fec934"
         },
@@ -752,7 +776,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 53
+            "type": 54
           },
           "selector": "0x9ea806dd"
         }
@@ -2440,6 +2464,43 @@
                   "typeName": "String"
                 },
                 {
+                  "name": "share",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "zk_proof",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "key_switch_pk",
+                  "type": 1,
+                  "typeName": "String"
+                }
+              ]
+            }
+          },
+          "path": [
+            "blbc",
+            "model",
+            "key_switch",
+            "KeySwitchResult"
+          ]
+        }
+      },
+      {
+        "id": 53,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "key_switch_session_id",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
                   "name": "result_creator",
                   "type": 14,
                   "typeName": "AccountId"
@@ -2456,7 +2517,7 @@
         }
       },
       {
-        "id": 53,
+        "id": 54,
         "type": {
           "def": {
             "variant": {
@@ -2498,7 +2559,7 @@
         }
       },
       {
-        "id": 54,
+        "id": 55,
         "type": {
           "def": {
             "variant": {
@@ -2506,7 +2567,7 @@
                 {
                   "fields": [
                     {
-                      "type": 55
+                      "type": 56
                     }
                   ],
                   "index": 0,
@@ -2527,7 +2588,7 @@
           "params": [
             {
               "name": "T",
-              "type": 55
+              "type": 56
             },
             {
               "name": "E",
@@ -2540,7 +2601,7 @@
         }
       },
       {
-        "id": 55,
+        "id": 56,
         "type": {
           "def": {
             "sequence": {
