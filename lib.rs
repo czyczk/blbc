@@ -38,7 +38,7 @@ mod blbc {
         pub resource_ids: Vec<String>,
         /// 存储所有请求的 auth_session_id
         pub auth_session_ids: Vec<String>,
-        /// 存储所有的 ${ksSessionID}_${creator}
+        /// 存储所有的 ${ksSessionID}_${creator_as_base64}
         pub ks_result_keys: Vec<String>,
         /// 存储通过资源 ID 可以找到的链上资源，资源内容是字节数组
         pub res_map: Mapping<String, Vec<u8>>,
@@ -54,7 +54,7 @@ mod blbc {
         pub auth_response_map: Mapping<String, AuthResponseStored>,
         /// 存储通过 ks_session_id 可以找到的 KeySwitchTriggerStored
         pub ks_trigger_map: Mapping<String, KeySwitchTriggerStored>,
-        /// 存储通过 ${ks_session_id}_${creator} 可以找到的 KeySwitchResultStored
+        /// 存储通过 ${ks_session_id}_${creator_as_base64} 可以找到的 KeySwitchResultStored
         pub ks_result_map: Mapping<String, KeySwitchResultStored>,
     }
 
@@ -340,29 +340,6 @@ mod blbc {
             ks_session_id: String,
         ) -> Result<Vec<KeySwitchResultStored>, String> {
             key_switch::list_key_switch_results_by_id(self, ks_session_id)
-        }
-
-        // TODO: This is a helper function and will be moved into the desired module as a
-        // non-public function
-        #[ink(message)]
-        pub fn get_key_switch_result_with_accountid_string(
-            &self,
-            ks_session_id: String,
-            creator_string: String,
-        ) -> Result<KeySwitchResultStored, String> {
-            ink_env::debug_println!("---");
-            ink_env::debug_println!("get_key_switch_result_with_accountid_string");
-
-            let key = format!("'{}'_'{}'", &ks_session_id, &creator_string);
-
-            // 读 KeySwitchResultStored 并返回，若未找到则返回 CODE_NOT_FOUND
-            let ks_result_stored = match self.ks_result_map.get(&key) {
-                Some(it) => it,
-                None => return Err(error_code::CODE_NOT_FOUND.into()),
-            };
-
-            // 合约现还不支持范型，故不能指定 lifetime，只能把有所有权的东西传出。
-            return Ok(ks_result_stored.clone());
         }
     }
 
@@ -1059,6 +1036,24 @@ mod blbc {
                 blbc.get_auth_request("01".into())
             );
         }
+
+        // #[ink::test]
+        // fn test_create_key_switch_result_with_normal_process() {
+        //     // 初始化
+        //     let mut blbc = Blbc::default();
+        //     let ks_result = KeySwitchResult{
+        //         key_switch_session_id: "0987645".to_string(),
+        //         share: "".to_string(),
+        //         zk_proof: "".to_string(),
+        //         key_switch_pk: "".to_string()
+        //     };
+        //     // 直接调用，期待状态为 ERROR 且错误内容为 codeNotFound
+        //     assert_eq!(
+        //         Err(error_code::CODE_NOT_FOUND.into()),
+        //         blbc.create_key_switch_result(ks_result)
+        //     );
+        // }
+
 
         const DATA1: &str = "data1";
         const DATA2: &str = "data2";
