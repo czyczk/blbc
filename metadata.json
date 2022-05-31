@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0x8e99ae7d33f3d22170d4e685e3dcec93c628c9f2b11985b76046b64c3181bcac",
+    "hash": "0xd4a1aa319a36f961ba6de2230a288ed76e56d7de2686848a04eb9af57542aa57",
     "language": "ink! 3.0.1",
     "compiler": "rustc 1.63.0-nightly"
   },
@@ -746,39 +746,6 @@
             "type": 55
           },
           "selector": "0x04fec934"
-        },
-        {
-          "args": [
-            {
-              "label": "ks_session_id",
-              "type": {
-                "displayName": [
-                  "String"
-                ],
-                "type": 1
-              }
-            },
-            {
-              "label": "creator_string",
-              "type": {
-                "displayName": [
-                  "String"
-                ],
-                "type": 1
-              }
-            }
-          ],
-          "docs": [],
-          "label": "get_key_switch_result_with_accountid_string",
-          "mutates": false,
-          "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 54
-          },
-          "selector": "0x9ea806dd"
         }
       ]
     },
