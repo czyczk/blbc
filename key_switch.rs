@@ -3,6 +3,7 @@ use crate::blbc::{Blbc, KSCreated, KSResultCreated, ResourceCreated, EVENT_ID_FO
 use crate::error_code;
 use crate::model::ManualJsonfiable;
 use alloc::collections::BTreeMap;
+use scale::{Decode, Encode};
 use ink_prelude::string::String;
 // use crate::casbink::model::default_model::DefaultModel;
 use crate::model::datetime::ScaleDateTimeLocal;
@@ -188,7 +189,7 @@ pub fn create_key_switch_result(ctx: &mut Blbc, ks_result: KeySwitchResult) -> R
     };
 
     // 获取 key 并存储上链
-    let creator_as_base64: String = base64::encode(creator);
+    let creator_as_base64: String = base64::encode(creator.encode());
     let key = get_key_for_key_switch_response(&ks_session_id,&creator_as_base64);
     ctx.ks_result_map.insert(key.clone(), &ks_result_stored);
     ctx.ks_result_keys.push(key.clone());
