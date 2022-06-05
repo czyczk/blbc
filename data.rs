@@ -78,10 +78,10 @@ pub fn create_plain_data(
 
     // 存储数据
     ink_env::debug_println!("正在存储数据");
-    ctx.resource_ids.push(resource_id.clone());
     ctx.res_map.insert(resource_id.clone(), &data_bytes);
     ctx.res_metadata_map
         .insert(resource_id.clone(), &metadata_stored);
+    ctx.resource_ids.push(resource_id.clone());
 
     // 通过事件返回值
     ctx.env().emit_event(ResourceCreated {
@@ -154,13 +154,12 @@ pub fn create_encrypted_data(
 
     // 存储数据
     ink_env::debug_println!("正在存储数据");
-    ctx.resource_ids.push(resource_id.clone());
     ctx.res_map.insert(resource_id.clone(), &data_bytes);
     ctx.res_key_map.insert(resource_id.clone(), &key_decoded);
     ctx.res_policy_map.insert(resource_id.clone(), &encrypted_data.policy);
     ctx.res_metadata_map
         .insert(resource_id.clone(), &metadata_stored);
-
+    ctx.resource_ids.push(resource_id.clone());
 
     // 通过事件返回值
     ctx.env().emit_event(ResourceCreated {
@@ -233,13 +232,12 @@ pub fn create_offchain_data(
 
     // 存储数据
     ink_env::debug_println!("正在存储数据");
-    ctx.resource_ids.push(resource_id.clone());
     ctx.res_map.insert(resource_id.clone(), &offchain_data.cid.clone().into_bytes());
     ctx.res_key_map.insert(resource_id.clone(), &key_decoded);
     ctx.res_policy_map.insert(resource_id.clone(), &offchain_data.policy);
     ctx.res_metadata_map
         .insert(resource_id.clone(), &metadata_stored);
-
+    ctx.resource_ids.push(resource_id.clone());
 
     // 通过事件返回值
     ctx.env().emit_event(ResourceCreated {
