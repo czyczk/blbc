@@ -3,24 +3,33 @@
 extern crate alloc;
 extern crate core;
 
+pub mod auth;
 pub mod data;
 pub mod error_code;
 pub mod extension;
+pub mod key_switch;
 pub mod model;
-pub mod auth;
 
 use ink_lang as ink;
 
 #[ink::contract]
 mod blbc {
-    use crate::{auth, data, error_code, model::data::{PlainData, EncryptedData, OffchainData, ResMetadataStored}, model::query::IDsWithPagination};
+    use crate::model::auth::{AuthRequest, AuthRequestStored, AuthResponse, AuthResponseStored};
+    use crate::model::datetime::ScaleDateTimeLocal;
+    use crate::model::key_switch::{
+        DepartmentIdentityStored, KeySwitchResult, KeySwitchResultQuery, KeySwitchResultStored,
+        KeySwitchTrigger, KeySwitchTriggerStored,
+    };
+    use crate::model::query::QueryConditions;
+    use crate::{
+        auth, data, error_code, key_switch,
+        model::data::{EncryptedData, OffchainData, PlainData, ResMetadataStored},
+        model::query::IDsWithPagination,
+    };
+    use ink_prelude::format;
     use ink_prelude::string::String;
     use ink_prelude::vec::Vec;
     use ink_storage::{traits::SpreadAllocate, Mapping};
-    use crate::model::auth::{AuthRequest, AuthRequestStored, AuthResponse, AuthResponseStored};
-    use crate::model::datetime::ScaleDateTimeLocal;
-    use crate::model::query::QueryConditions;
-
 
     #[ink(storage)]
     #[derive(SpreadAllocate)]
@@ -29,6 +38,8 @@ mod blbc {
         pub resource_ids: Vec<String>,
         /// 存储所有请求的 auth_session_id
         pub auth_session_ids: Vec<String>,
+        /// 存储所有的 ${ksSessionID}_${creator_as_base64}
+        pub ks_result_keys: Vec<String>,
         /// 存储通过资源 ID 可以找到的链上资源，资源内容是字节数组
         pub res_map: Mapping<String, Vec<u8>>,
         /// 存储通过资源 ID 可以找到的资源元数据
@@ -41,8 +52,11 @@ mod blbc {
         pub auth_request_map: Mapping<String, AuthRequestStored>,
         /// 存储通过 auth_session_id 可以找到的 AuthResponseStored
         pub auth_response_map: Mapping<String, AuthResponseStored>,
+        /// 存储通过 ks_session_id 可以找到的 KeySwitchTriggerStored
+        pub ks_trigger_map: Mapping<String, KeySwitchTriggerStored>,
+        /// 存储通过 ${ks_session_id}_${creator_as_base64} 可以找到的 KeySwitchResultStored
+        pub ks_result_map: Mapping<String, KeySwitchResultStored>,
     }
-
 
     #[ink(event)]
     pub struct ResourceCreated {
@@ -54,6 +68,18 @@ mod blbc {
     pub struct AuthCreated {
         pub event_id: String,
         pub auth_session_id: String,
+    }
+
+    #[ink(event)]
+    pub struct KSCreated {
+        pub event_id: String,
+        pub data: String, // Manually JSONfied KeySwitchTriggerStored object
+    }
+
+    #[ink(event)]
+    pub struct KSResultCreated {
+        pub event_id: String,
+        pub value: String,
     }
 
     pub const EVENT_ID_FOR_RETURNED_VALUE: &'static str = "~TXRET~";
@@ -168,27 +194,43 @@ mod blbc {
         }
 
         #[ink(message)]
-        pub fn list_resource_ids_by_conditions(&mut self, query_conditions: QueryConditions, page_size: u64) -> Result<IDsWithPagination, String> {
+        pub fn list_resource_ids_by_conditions(
+            &mut self,
+            query_conditions: QueryConditions,
+            page_size: u64,
+        ) -> Result<IDsWithPagination, String> {
             data::list_resource_ids_by_conditions(self, query_conditions, page_size)
         }
 
         #[ink(message)]
-        pub fn create_auth_request(&mut self, auth_session_id: String, auth_request: AuthRequest, event_id: Option<String>) -> Result<(), String> {
+        pub fn create_auth_request(
+            &mut self,
+            auth_session_id: String,
+            auth_request: AuthRequest,
+            event_id: Option<String>,
+        ) -> Result<(), String> {
             ink_env::debug_println!("---");
             ink_env::debug_println!("create_auth_request");
             auth::create_auth_request(self, auth_session_id, auth_request, event_id)
         }
 
         #[ink(message)]
-        pub fn create_auth_response(&mut self, auth_session_id: String, auth_response: AuthResponse, event_id: Option<String>) -> Result<(), String> {
+        pub fn create_auth_response(
+            &mut self,
+            auth_session_id: String,
+            auth_response: AuthResponse,
+            event_id: Option<String>,
+        ) -> Result<(), String> {
             ink_env::debug_println!("---");
             ink_env::debug_println!("create_auth_response");
             auth::create_auth_response(self, auth_session_id, auth_response, event_id)
         }
 
-
         #[ink(message)]
-        pub fn get_auth_request(&self, auth_session_id: String) -> Result<AuthRequestStored, String> {
+        pub fn get_auth_request(
+            &self,
+            auth_session_id: String,
+        ) -> Result<AuthRequestStored, String> {
             ink_env::debug_println!("---");
             ink_env::debug_println!("get_auth_request");
 
@@ -203,7 +245,10 @@ mod blbc {
         }
 
         #[ink(message)]
-        pub fn get_auth_response(&self, auth_session_id: String) -> Result<AuthResponseStored, String> {
+        pub fn get_auth_response(
+            &self,
+            auth_session_id: String,
+        ) -> Result<AuthResponseStored, String> {
             ink_env::debug_println!("---");
             ink_env::debug_println!("get_auth_response");
 
@@ -218,17 +263,83 @@ mod blbc {
         }
 
         #[ink(message)]
-        pub fn list_pending_auth_session_ids_by_resource_creator(&mut self, page_size: u32, bookmark: Option<String>) -> Result<IDsWithPagination, String> {
+        pub fn list_pending_auth_session_ids_by_resource_creator(
+            &mut self,
+            page_size: u32,
+            bookmark: Option<String>,
+        ) -> Result<IDsWithPagination, String> {
             ink_env::debug_println!("---");
             ink_env::debug_println!("list_pending_auth_session_ids_by_resource_creator");
             auth::list_pending_auth_session_ids_by_resource_creator(self, page_size, bookmark)
         }
 
         #[ink(message)]
-        pub fn list_auth_session_ids_by_requestor(&mut self, page_size: u32, bookmark: Option<String>, is_latest_first: bool) -> Result<IDsWithPagination, String> {
+        pub fn list_auth_session_ids_by_requestor(
+            &mut self,
+            page_size: u32,
+            bookmark: Option<String>,
+            is_latest_first: bool,
+        ) -> Result<IDsWithPagination, String> {
             ink_env::debug_println!("---");
             ink_env::debug_println!("list_auth_session_ids_by_requestor");
             auth::list_auth_session_ids_by_requestor(self, page_size, bookmark, is_latest_first)
+        }
+
+        #[ink(message)]
+        pub fn create_key_switch_trigger(
+            &mut self,
+            ks_session_id: String,
+            dept_identity: DepartmentIdentityStored,
+            ks_trigger: KeySwitchTrigger,
+            event_id: String,
+        ) -> Result<(), String> {
+            key_switch::create_key_switch_trigger(
+                self,
+                ks_session_id,
+                dept_identity,
+                ks_trigger,
+                event_id,
+            )
+        }
+
+        #[ink(message)]
+        pub fn create_key_switch_result(
+            &mut self,
+            ks_result: KeySwitchResult,
+        ) -> Result<(), String> {
+            key_switch::create_key_switch_result(self, ks_result)
+        }
+
+        #[ink(message)]
+        pub fn get_key_switch_result(
+            &self,
+            query: KeySwitchResultQuery,
+        ) -> Result<KeySwitchResultStored, String> {
+            ink_env::debug_println!("---");
+            ink_env::debug_println!("get_key_switch_result");
+
+            // 获取 ks_session_id and result_creator
+            let ks_session_id = query.key_switch_session_id;
+            let result_creator = query.result_creator;
+
+            let key = format!("'{}'_'{:?}'", &ks_session_id, &result_creator);
+
+            // 读 KeySwitchResultStored 并返回，若未找到则返回 CODE_NOT_FOUND
+            let ks_result_stored = match self.ks_result_map.get(&key) {
+                Some(it) => it,
+                None => return Err(error_code::CODE_NOT_FOUND.into()),
+            };
+
+            // 合约现还不支持范型，故不能指定 lifetime，只能把有所有权的东西传出。
+            return Ok(ks_result_stored.clone());
+        }
+
+        #[ink(message)]
+        pub fn list_key_switch_results_by_id(
+            &mut self,
+            ks_session_id: String,
+        ) -> Result<Vec<KeySwitchResultStored>, String> {
+            key_switch::list_key_switch_results_by_id(self, ks_session_id)
         }
     }
 
@@ -243,13 +354,15 @@ mod blbc {
         extern crate alloc;
 
         use crate::model::data::{PlainData, ResMetadata, ResourceType};
+        use crate::model::document::DocumentType;
+        use crate::model::query::{
+            CommonQueryConditions, DocumentQueryConditions, EntityAssetQueryConditions,
+        };
         use alloc::collections::BTreeMap;
-        use std::iter::FromIterator;
         /// Imports `ink_lang` so we can use `#[ink::test]`.
         use ink_lang as ink;
         use sha2::{Digest, Sha256};
-        use crate::model::document::DocumentType;
-        use crate::model::query::{CommonQueryConditions, DocumentQueryConditions, EntityAssetQueryConditions};
+        use std::iter::FromIterator;
 
         #[ink::test]
         fn default_works() {
@@ -344,7 +457,9 @@ mod blbc {
                 Err(err) => panic!("无法解析 key: {}", err),
             };
             // Invoke with sample_encrypted_data1 and expect the return value to be Ok()
-            assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data1, None)
+                .is_ok());
 
             // Check if the data in maps is as expected
             assert_eq!(
@@ -355,10 +470,7 @@ mod blbc {
                 blbc.res_key_map.get(&resource_id),
                 Some(key_decoded.to_owned())
             );
-            assert_eq!(
-                blbc.res_policy_map.get(&resource_id),
-                Some(policy)
-            );
+            assert_eq!(blbc.res_policy_map.get(&resource_id), Some(policy));
 
             // Check if the stored metadata is correct
             let metadata_stored = blbc.res_metadata_map.get(&resource_id);
@@ -383,10 +495,14 @@ mod blbc {
                 sample_encrypted_data1.metadata.resource_id.clone();
 
             // Invoke with data1 and expect the return value to be Ok()
-            assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data1, None)
+                .is_ok());
 
             // Invoke with data2 and expect the return value to be Err()
-            assert!(blbc.create_encrypted_data(sample_encrypted_data2, None).is_err());
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data2, None)
+                .is_err());
         }
 
         #[ink::test]
@@ -406,7 +522,9 @@ mod blbc {
                 Err(err) => panic!("无法解析 key: {}", err),
             };
             // Invoke with sample_encrypted_data1 and expect the return value to be Ok()
-            assert!(blbc.create_offchain_data(sample_offchain_data1, None).is_ok());
+            assert!(blbc
+                .create_offchain_data(sample_offchain_data1, None)
+                .is_ok());
 
             // Check if the data in maps is as expected
             assert_eq!(
@@ -417,10 +535,7 @@ mod blbc {
                 blbc.res_key_map.get(&resource_id),
                 Some(key_decoded.to_owned())
             );
-            assert_eq!(
-                blbc.res_policy_map.get(&resource_id),
-                Some(policy)
-            );
+            assert_eq!(blbc.res_policy_map.get(&resource_id), Some(policy));
 
             // Check if the stored metadata is correct
             let metadata_stored = blbc.res_metadata_map.get(&resource_id);
@@ -443,10 +558,14 @@ mod blbc {
                 sample_offchain_data1.metadata.resource_id.clone();
 
             // Invoke with data1 and expect the return value to be Ok()
-            assert!(blbc.create_offchain_data(sample_offchain_data1, None).is_ok());
+            assert!(blbc
+                .create_offchain_data(sample_offchain_data1, None)
+                .is_ok());
 
             // Invoke with data2 and expect the return value to be Err()
-            assert!(blbc.create_offchain_data(sample_offchain_data2, None).is_err());
+            assert!(blbc
+                .create_offchain_data(sample_offchain_data2, None)
+                .is_err());
         }
 
         #[ink::test]
@@ -511,10 +630,7 @@ mod blbc {
             };
 
             // Check if the data in map is as expected
-            assert_eq!(
-                data_as_base64,
-                data_to_be_checked
-            );
+            assert_eq!(data_as_base64, data_to_be_checked);
         }
 
         #[ink::test]
@@ -542,7 +658,9 @@ mod blbc {
             let key_as_base64: String = sample_encrypted_data1.key.clone();
 
             // Invoke with sample_encrypted_data1 and expect the return value to be Ok()
-            assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data1, None)
+                .is_ok());
 
             // Invoke get_key and expect the return value to be Ok()
             let key_to_be_checked = match blbc.get_key(resource_id) {
@@ -551,10 +669,7 @@ mod blbc {
             };
 
             // Check if the key in res_key_map is as expected
-            assert_eq!(
-                key_as_base64,
-                key_to_be_checked
-            );
+            assert_eq!(key_as_base64, key_to_be_checked);
         }
 
         #[ink::test]
@@ -567,7 +682,9 @@ mod blbc {
             non_existent_resource_id.push_str("_non_existent");
 
             // Invoke with sample_encrypted_data1 and expect the return value to be Ok()
-            assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data1, None)
+                .is_ok());
 
             // Invoke with a non existent resource ID and expect the response status to be ERROR
             assert!(blbc.get_key(non_existent_resource_id).is_err());
@@ -582,7 +699,9 @@ mod blbc {
             let policy = sample_encrypted_data1.policy.clone();
 
             // Invoke with sample_encrypted_data1 and expect the return value to be Ok()
-            assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data1, None)
+                .is_ok());
 
             // Invoke get_policy and expect the return value to be Ok()
             let policy_to_be_checked = match blbc.get_policy(resource_id) {
@@ -591,24 +710,20 @@ mod blbc {
             };
 
             // Check if the policy in res_policy_map is as expected
-            assert_eq!(
-                policy,
-                policy_to_be_checked
-            );
+            assert_eq!(policy, policy_to_be_checked);
 
             // Prepare the arg with offchain data and do it again
             let sample_offchain_data1 = get_sample_offchain_data1();
             let resource_id2 = sample_offchain_data1.metadata.resource_id.clone();
             let policy2 = sample_offchain_data1.policy.clone();
-            assert!(blbc.create_offchain_data(sample_offchain_data1, None).is_ok());
+            assert!(blbc
+                .create_offchain_data(sample_offchain_data1, None)
+                .is_ok());
             let policy_to_be_checked2 = match blbc.get_policy(resource_id2) {
                 Ok(b) => b,
                 Err(msg) => panic!("{}", msg),
             };
-            assert_eq!(
-                policy2,
-                policy_to_be_checked2
-            );
+            assert_eq!(policy2, policy_to_be_checked2);
         }
 
         #[ink::test]
@@ -621,7 +736,9 @@ mod blbc {
             non_existent_resource_id.push_str("_non_existent");
 
             // Invoke with sample_encrypted_data1 and expect the return value to be Ok()
-            assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data1, None)
+                .is_ok());
 
             // Invoke with a non existent resource ID and expect the response status to be ERROR
             assert!(blbc.get_policy(non_existent_resource_id).is_err());
@@ -649,7 +766,6 @@ mod blbc {
         //     assert!(blbc.list_resource_ids_by_creator("documen".into(), false, 9, None).is_ok());
         //     assert!(blbc.list_resource_ids_by_creator("document".into(), true, 5, Some("201".into())).is_ok());
         // }
-
 
         // 关于时间的查询无法测试，其余查询条件已测试通过
         // #[ink::test]
@@ -712,18 +828,27 @@ mod blbc {
             let auth_session_id: String = "1".into();
             let sample_encrypted_data1 = get_sample_encrypted_data1();
             let resource_id = sample_encrypted_data1.metadata.resource_id.clone();
-            assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data1, None)
+                .is_ok());
             // 创建授权请求
             let sample_auth_request1 = get_sample_auth_request1(resource_id.clone());
-            assert!(blbc.create_auth_request(auth_session_id.clone(), sample_auth_request1.clone(), None).is_ok());
+            assert!(blbc
+                .create_auth_request(auth_session_id.clone(), sample_auth_request1.clone(), None)
+                .is_ok());
             // 验证
             let auth_request_to_be_checked = match blbc.get_auth_request(auth_session_id.clone()) {
-                Ok(a) => { a }
-                Err(msg) => { panic!("{}", msg) }
+                Ok(a) => a,
+                Err(msg) => {
+                    panic!("{}", msg)
+                }
             };
             assert_eq!(auth_session_id, auth_request_to_be_checked.auth_session_id);
             assert_eq!(resource_id, auth_request_to_be_checked.resource_id);
-            assert_eq!(sample_auth_request1.extensions, auth_request_to_be_checked.extensions);
+            assert_eq!(
+                sample_auth_request1.extensions,
+                auth_request_to_be_checked.extensions
+            );
         }
 
         #[ink::test]
@@ -734,18 +859,27 @@ mod blbc {
             let auth_session_id: String = "1".into();
             let sample_offchain_data1 = get_sample_offchain_data1();
             let resource_id = sample_offchain_data1.metadata.resource_id.clone();
-            assert!(blbc.create_offchain_data(sample_offchain_data1, None).is_ok());
+            assert!(blbc
+                .create_offchain_data(sample_offchain_data1, None)
+                .is_ok());
             // 创建授权请求
             let sample_auth_request1 = get_sample_auth_request1(resource_id.clone());
-            assert!(blbc.create_auth_request(auth_session_id.clone(), sample_auth_request1.clone(), None).is_ok());
+            assert!(blbc
+                .create_auth_request(auth_session_id.clone(), sample_auth_request1.clone(), None)
+                .is_ok());
             // 验证
             let auth_request_to_be_checked = match blbc.get_auth_request(auth_session_id.clone()) {
-                Ok(a) => { a }
-                Err(msg) => { panic!("{}", msg) }
+                Ok(a) => a,
+                Err(msg) => {
+                    panic!("{}", msg)
+                }
             };
             assert_eq!(auth_session_id, auth_request_to_be_checked.auth_session_id);
             assert_eq!(resource_id, auth_request_to_be_checked.resource_id);
-            assert_eq!(sample_auth_request1.extensions, auth_request_to_be_checked.extensions);
+            assert_eq!(
+                sample_auth_request1.extensions,
+                auth_request_to_be_checked.extensions
+            );
         }
 
         #[ink::test]
@@ -760,7 +894,9 @@ mod blbc {
             // 创建授权请求
             let sample_auth_request1 = get_sample_auth_request1(resource_id.clone());
             // 期待状态为 ERROR
-            assert!(blbc.create_auth_request(auth_session_id, sample_auth_request1.clone(), None).is_err());
+            assert!(blbc
+                .create_auth_request(auth_session_id, sample_auth_request1.clone(), None)
+                .is_err());
         }
 
         #[ink::test]
@@ -770,7 +906,9 @@ mod blbc {
             let auth_session_id: String = "1".into();
             let sample_auth_request1 = get_sample_auth_request1("NON_EXISTENT_RESOURCE_ID".into());
             // 期待状态为 ERROR
-            assert!(blbc.create_auth_request(auth_session_id, sample_auth_request1.clone(), None).is_err());
+            assert!(blbc
+                .create_auth_request(auth_session_id, sample_auth_request1.clone(), None)
+                .is_err());
         }
 
         #[ink::test]
@@ -781,22 +919,33 @@ mod blbc {
             let auth_session_id: String = "1".into();
             let sample_encrypted_data = get_sample_encrypted_data1();
             let resource_id = sample_encrypted_data.metadata.resource_id.clone();
-            assert!(blbc.create_encrypted_data(sample_encrypted_data, None).is_ok());
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data, None)
+                .is_ok());
             // user1 创建授权请求
             let sample_auth_request1 = get_sample_auth_request1(resource_id.clone());
-            assert!(blbc.create_auth_request(auth_session_id.clone(), sample_auth_request1.clone(), None).is_ok());
+            assert!(blbc
+                .create_auth_request(auth_session_id.clone(), sample_auth_request1.clone(), None)
+                .is_ok());
             // user1 创建授权批复
             let sample_auth_response1 = get_sample_auth_response1(resource_id.clone());
-            assert!(blbc.create_auth_response(auth_session_id.clone(), sample_auth_response1.clone(), None).is_ok());
+            assert!(blbc
+                .create_auth_response(auth_session_id.clone(), sample_auth_response1.clone(), None)
+                .is_ok());
             // 验证
-            let auth_response_to_be_checked = match blbc.get_auth_response(auth_session_id.clone()) {
-                Ok(a) => { a }
-                Err(msg) => { panic!("{}", msg) }
+            let auth_response_to_be_checked = match blbc.get_auth_response(auth_session_id.clone())
+            {
+                Ok(a) => a,
+                Err(msg) => {
+                    panic!("{}", msg)
+                }
             };
             assert_eq!(auth_session_id, auth_response_to_be_checked.auth_session_id);
-            assert_eq!(sample_auth_response1.result, auth_response_to_be_checked.result);
+            assert_eq!(
+                sample_auth_response1.result,
+                auth_response_to_be_checked.result
+            );
         }
-
 
         #[ink::test]
         fn test_create_auth_response_twice() {
@@ -806,15 +955,23 @@ mod blbc {
             let auth_session_id: String = "1".into();
             let sample_encrypted_data = get_sample_encrypted_data1();
             let resource_id = sample_encrypted_data.metadata.resource_id.clone();
-            assert!(blbc.create_encrypted_data(sample_encrypted_data, None).is_ok());
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data, None)
+                .is_ok());
             // user1 创建授权请求
             let sample_auth_request1 = get_sample_auth_request1(resource_id.clone());
-            assert!(blbc.create_auth_request(auth_session_id.clone(), sample_auth_request1.clone(), None).is_ok());
+            assert!(blbc
+                .create_auth_request(auth_session_id.clone(), sample_auth_request1.clone(), None)
+                .is_ok());
             // user1 创建授权批复
             let sample_auth_response1 = get_sample_auth_response1(resource_id.clone());
-            assert!(blbc.create_auth_response(auth_session_id.clone(), sample_auth_response1.clone(), None).is_ok());
+            assert!(blbc
+                .create_auth_response(auth_session_id.clone(), sample_auth_response1.clone(), None)
+                .is_ok());
             // user1 再次创建授权批复, 期待状态为 ERR
-            assert!(blbc.create_auth_response(auth_session_id.clone(), sample_auth_response1, None).is_err());
+            assert!(blbc
+                .create_auth_response(auth_session_id.clone(), sample_auth_response1, None)
+                .is_err());
         }
 
         #[ink::test]
@@ -825,10 +982,14 @@ mod blbc {
             let auth_session_id: String = "1".into();
             let sample_encrypted_data = get_sample_encrypted_data1();
             let resource_id = sample_encrypted_data.metadata.resource_id.clone();
-            assert!(blbc.create_encrypted_data(sample_encrypted_data, None).is_ok());
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data, None)
+                .is_ok());
             // user1 直接创建授权批复，期待状态为 ERR
             let sample_auth_response1 = get_sample_auth_response1(resource_id.clone());
-            assert!(blbc.create_auth_response(auth_session_id, sample_auth_response1.clone(), None).is_err());
+            assert!(blbc
+                .create_auth_response(auth_session_id, sample_auth_response1.clone(), None)
+                .is_err());
         }
 
         #[ink::test]
@@ -839,18 +1000,30 @@ mod blbc {
             let auth_session_id: String = "1".into();
             let sample_encrypted_data = get_sample_encrypted_data1();
             let resource_id = sample_encrypted_data.metadata.resource_id.clone();
-            assert!(blbc.create_encrypted_data(sample_encrypted_data, None).is_ok());
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data, None)
+                .is_ok());
             // user1 创建授权请求
             let sample_auth_request1 = get_sample_auth_request1(resource_id.clone());
-            assert!(blbc.create_auth_request(auth_session_id.clone(), sample_auth_request1.clone(), None).is_ok());
+            assert!(blbc
+                .create_auth_request(auth_session_id.clone(), sample_auth_request1.clone(), None)
+                .is_ok());
             // 验证
             let auth_request_to_be_checked = match blbc.get_auth_request(auth_session_id.clone()) {
-                Ok(a) => { a }
-                Err(msg) => { panic!("{}", msg) }
+                Ok(a) => a,
+                Err(msg) => {
+                    panic!("{}", msg)
+                }
             };
             assert_eq!(auth_session_id, auth_request_to_be_checked.auth_session_id);
-            assert_eq!(sample_auth_request1.resource_id, auth_request_to_be_checked.resource_id);
-            assert_eq!(sample_auth_request1.extensions, auth_request_to_be_checked.extensions);
+            assert_eq!(
+                sample_auth_request1.resource_id,
+                auth_request_to_be_checked.resource_id
+            );
+            assert_eq!(
+                sample_auth_request1.extensions,
+                auth_request_to_be_checked.extensions
+            );
         }
 
         #[ink::test]
@@ -858,8 +1031,28 @@ mod blbc {
             // 初始化
             let mut blbc = Blbc::default();
             // 直接调用，期待状态为 ERROR 且错误内容为 codeNotFound
-            assert_eq!(Err(error_code::CODE_NOT_FOUND.into()),blbc.get_auth_request("01".into()));
+            assert_eq!(
+                Err(error_code::CODE_NOT_FOUND.into()),
+                blbc.get_auth_request("01".into())
+            );
         }
+
+        // #[ink::test]
+        // fn test_create_key_switch_result_with_normal_process() {
+        //     // 初始化
+        //     let mut blbc = Blbc::default();
+        //     let ks_result = KeySwitchResult{
+        //         key_switch_session_id: "0987645".to_string(),
+        //         share: "".to_string(),
+        //         zk_proof: "".to_string(),
+        //         key_switch_pk: "".to_string()
+        //     };
+        //     // 直接调用，期待状态为 ERROR 且错误内容为 codeNotFound
+        //     assert_eq!(
+        //         Err(error_code::CODE_NOT_FOUND.into()),
+        //         blbc.create_key_switch_result(ks_result)
+        //     );
+        // }
 
 
         const DATA1: &str = "data1";
@@ -881,7 +1074,7 @@ mod blbc {
                 ("name".into(), "Sample PlainData 1".into()),
                 ("documentType".into(), DocumentType::DesignDocument.into()),
                 ("headDocumentId".into(), "1000".into()),
-                ("designDocumentId".into(), "101".into())
+                ("designDocumentId".into(), "101".into()),
             ]);
 
             return PlainData {
@@ -911,7 +1104,7 @@ mod blbc {
                 ("name".into(), "示例明文数据2".into()),
                 ("documentType".into(), DocumentType::TransferDocument.into()),
                 ("headDocumentId".into(), "1000".into()),
-                ("designDocumentId".into(), "101".into())
+                ("designDocumentId".into(), "101".into()),
             ]);
 
             return PlainData {
@@ -941,9 +1134,8 @@ mod blbc {
                 ("name".into(), "Sample Encrypted Data 1".into()),
                 ("documentType".into(), DocumentType::UsageDocument.into()),
                 ("headDocumentId".into(), "1000".into()),
-                ("designDocumentId".into(), "101".into())
+                ("designDocumentId".into(), "101".into()),
             ]);
-
 
             return EncryptedData {
                 metadata: ResMetadata {
@@ -975,9 +1167,8 @@ mod blbc {
                 ("name".into(), "示例加密数据2".into()),
                 ("documentType".into(), DocumentType::UsageDocument.into()),
                 ("headDocumentId".into(), "1000".into()),
-                ("designDocumentId".into(), "101".into())
+                ("designDocumentId".into(), "101".into()),
             ]);
-
 
             return EncryptedData {
                 metadata: ResMetadata {
@@ -1008,7 +1199,7 @@ mod blbc {
                 ("name".into(), "Sample Offchain Data 1".into()),
                 ("documentType".into(), DocumentType::RepairDocument.into()),
                 ("headDocumentId".into(), "1000".into()),
-                ("designDocumentId".into(), "101".into())
+                ("designDocumentId".into(), "101".into()),
             ]);
 
             return OffchainData {
@@ -1037,9 +1228,12 @@ mod blbc {
             let extension_map: BTreeMap<String, String> = BTreeMap::from([
                 ("dataType".into(), "document".into()),
                 ("name".into(), "示例链下数据2".into()),
-                ("documentType".into(), DocumentType::ProductionDocument.into()),
+                (
+                    "documentType".into(),
+                    DocumentType::ProductionDocument.into(),
+                ),
                 ("headDocumentId".into(), "10001".into()),
-                ("designDocumentId".into(), "101".into())
+                ("designDocumentId".into(), "101".into()),
             ]);
 
             return OffchainData {
@@ -1059,7 +1253,7 @@ mod blbc {
         fn get_sample_auth_request1(resource_id: String) -> AuthRequest {
             let extension_map: BTreeMap<String, String> = BTreeMap::from([
                 ("dataType".into(), "authRequest".into()),
-                ("name".into(), "sampleAuthRequest1".into())
+                ("name".into(), "sampleAuthRequest1".into()),
             ]);
 
             return AuthRequest {
@@ -1071,7 +1265,7 @@ mod blbc {
         fn get_sample_auth_request2(resource_id: String) -> AuthRequest {
             let extension_map: BTreeMap<String, String> = BTreeMap::from([
                 ("dataType".into(), "authRequest".into()),
-                ("name".into(), "sampleAuthRequest2".into())
+                ("name".into(), "sampleAuthRequest2".into()),
             ]);
 
             return AuthRequest {
@@ -1081,9 +1275,8 @@ mod blbc {
         }
 
         fn get_sample_auth_response1(resource_id: String) -> AuthResponse {
-            let extension_map: BTreeMap<String, String> = BTreeMap::from([
-                ("dataType".into(), "authResponse".into())
-            ]);
+            let extension_map: BTreeMap<String, String> =
+                BTreeMap::from([("dataType".into(), "authResponse".into())]);
 
             return AuthResponse {
                 auth_session_id: "1".into(),
@@ -1092,11 +1285,9 @@ mod blbc {
             };
         }
 
-
         fn get_sample_auth_response2(resource_id: String) -> AuthResponse {
-            let extension_map: BTreeMap<String, String> = BTreeMap::from([
-                ("dataType".into(), "authResponse".into())
-            ]);
+            let extension_map: BTreeMap<String, String> =
+                BTreeMap::from([("dataType".into(), "authResponse".into())]);
 
             return AuthResponse {
                 auth_session_id: "2".into(),
