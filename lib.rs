@@ -820,6 +820,60 @@ mod blbc {
         //     assert!(blbc.list_resource_ids_by_conditions(query_conditions2, 9).is_ok());
         // }
 
+
+        /// 测试区分文档和资产 id
+        // #[ink::test]
+        // fn test_list_resource_ids_by_conditions_category() {
+        //     // Prepare
+        //     let mut blbc = Blbc::default();
+        //     let sample_offchain_data1 = get_sample_offchain_data1();
+        //     let sample_offchain_data2 = get_sample_offchain_data2();
+        //     let sample_plain_data1 = get_sample_plain_data1();
+        //     let sample_plain_data2 = get_sample_plain_data2();
+        //     let sample_encrypted_data2 = get_sample_encrypted_data2();
+        //     let sample_encrypted_data1 = get_sample_encrypted_data1();
+        //
+        //     // Invoke with sample_encrypted_data1 and expect the return value to be Ok()
+        //     assert!(blbc.create_offchain_data(sample_offchain_data1, None).is_ok());
+        //     assert!(blbc.create_encrypted_data(sample_encrypted_data2, None).is_ok());
+        //     assert!(blbc.create_offchain_data(sample_offchain_data2, None).is_ok());
+        //     assert!(blbc.create_encrypted_data(sample_encrypted_data1, None).is_ok());
+        //     assert!(blbc.create_plain_data(sample_plain_data2, None).is_ok());
+        //     assert!(blbc.create_plain_data(sample_plain_data1, None).is_ok());
+        //
+        //     let query_conditions1 = QueryConditions::DocumentQueryConditions(DocumentQueryConditions {
+        //         common_query_conditions: CommonQueryConditions {
+        //             is_desc: false,
+        //             resource_id: None,
+        //             is_name_exact: None,
+        //             name: None,
+        //             is_time_exact: None,
+        //             time: None,
+        //             time_after_inclusive: None,
+        //             time_before_exclusive: None,
+        //             last_resource_id: Some("".into()),
+        //         },
+        //         document_type: Some(DocumentType::UsageDocument),
+        //         preceding_document_id: None,
+        //         head_document_id: Some("1000".into()),
+        //         entity_asset_id: None,
+        //     });
+        //     assert!(blbc.list_resource_ids_by_conditions(query_conditions1, 88).is_ok());
+        //     // let query_conditions2 = QueryConditions::EntityAssetQueryConditions(EntityAssetQueryConditions{
+        //     //     common_query_conditions: CommonQueryConditions {
+        //     //     is_desc: true,
+        //     //     resource_id: None,
+        //     //     is_name_exact: None,
+        //     //     name: None,
+        //     //     is_time_exact: None,
+        //     //     time: None,
+        //     //     time_after_inclusive: None,
+        //     //     time_before_exclusive: None,
+        //     //     last_resource_id: Some("201".into())
+        //     // }, design_document_id: Some("101".into()) });
+        //     // assert!(blbc.list_resource_ids_by_conditions(query_conditions2, 9).is_ok());
+        // }
+
         #[ink::test]
         fn test_create_auth_request_with_encrypted_data() {
             // 初始化
@@ -1070,7 +1124,7 @@ mod blbc {
             hasher.update(DATA1.as_bytes());
             let hash_bytes = hasher.finalize();
             let extension_map: BTreeMap<String, String> = BTreeMap::from([
-                ("dataType".into(), "document".into()),
+                ("dataType".into(), "Document".into()),
                 ("name".into(), "Sample PlainData 1".into()),
                 ("documentType".into(), DocumentType::DesignDocument.into()),
                 ("headDocumentId".into(), "1000".into()),
@@ -1100,7 +1154,7 @@ mod blbc {
             hasher.update(DATA2.as_bytes());
             let hash_bytes = hasher.finalize();
             let extension_map: BTreeMap<String, String> = BTreeMap::from([
-                ("dataType".into(), "document".into()),
+                ("dataType".into(), "EntityAsset".into()),
                 ("name".into(), "示例明文数据2".into()),
                 ("documentType".into(), DocumentType::TransferDocument.into()),
                 ("headDocumentId".into(), "1000".into()),
@@ -1130,7 +1184,7 @@ mod blbc {
             hasher.update(DATA1.as_bytes());
             let hash_bytes = hasher.finalize();
             let extension_map: BTreeMap<String, String> = BTreeMap::from([
-                ("dataType".into(), "document".into()),
+                ("dataType".into(), "EntityAsset".into()),
                 ("name".into(), "Sample Encrypted Data 1".into()),
                 ("documentType".into(), DocumentType::UsageDocument.into()),
                 ("headDocumentId".into(), "1000".into()),
@@ -1163,7 +1217,7 @@ mod blbc {
             hasher.update(DATA2.as_bytes());
             let hash_bytes = hasher.finalize();
             let extension_map: BTreeMap<String, String> = BTreeMap::from([
-                ("dataType".into(), "document".into()),
+                ("dataType".into(), "Document".into()),
                 ("name".into(), "示例加密数据2".into()),
                 ("documentType".into(), DocumentType::UsageDocument.into()),
                 ("headDocumentId".into(), "1000".into()),
@@ -1195,7 +1249,7 @@ mod blbc {
             hasher.update(DATA1.as_bytes());
             let hash_bytes = hasher.finalize();
             let extension_map: BTreeMap<String, String> = BTreeMap::from([
-                ("dataType".into(), "document".into()),
+                ("dataType".into(), "EntityAsset".into()),
                 ("name".into(), "Sample Offchain Data 1".into()),
                 ("documentType".into(), DocumentType::RepairDocument.into()),
                 ("headDocumentId".into(), "1000".into()),
@@ -1226,7 +1280,7 @@ mod blbc {
             hasher.update(DATA2.as_bytes());
             let hash_bytes = hasher.finalize();
             let extension_map: BTreeMap<String, String> = BTreeMap::from([
-                ("dataType".into(), "document".into()),
+                ("dataType".into(), "EntityAsset".into()),
                 ("name".into(), "示例链下数据2".into()),
                 (
                     "documentType".into(),

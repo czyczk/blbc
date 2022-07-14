@@ -346,18 +346,23 @@ pub fn list_resource_ids_by_conditions(
     if page_size < 1 {
         return Err("page_size 应为正整数".into());
     }
-    let mut resource_ids = ctx.resource_ids.clone();
+    let resource_ids = ctx.resource_ids.clone();
     let mut eligible_ids: Vec<String> = Vec::new();
     let bookmark_string: String;
 
     // 分别处理 QueryConditions::DocumentQueryConditions 与 QueryConditions::EntityAssetQueryConditions
     match query_conditions {
         QueryConditions::DocumentQueryConditions(document_query_conditions) => {
-            // 获取全部 resource_id 并排序
+
+            // 获取全部文档 resource_id 并排序
+            let mut document_resource_ids = match get_resource_ids_by_category(ctx, resource_ids.clone(), "Document".into()) {
+                Ok(t) => {t}
+                Err(msg) => return Err(msg),
+            };
             if document_query_conditions.common_query_conditions.is_desc {
-                resource_ids.sort_unstable_by(|a, b| b.cmp(a));
+                document_resource_ids.sort_unstable_by(|a, b| b.cmp(a));
             } else {
-                resource_ids.sort_unstable();
+                document_resource_ids.sort_unstable();
             }
 
             // 书签为空表示从头查起
@@ -407,14 +412,19 @@ pub fn list_resource_ids_by_conditions(
             }
         }
         QueryConditions::EntityAssetQueryConditions(entity_asset_query_conditions) => {
-            // 获取全部 resource_id 并排序
+
+            // 获取全部资产 resource_id 并排序
+            let mut entity_asset_resource_ids = match get_resource_ids_by_category(ctx, resource_ids.clone(), "EntityAsset".into()) {
+                Ok(t) => {t}
+                Err(msg) => return Err(msg),
+            };
             if entity_asset_query_conditions
                 .common_query_conditions
                 .is_desc
             {
-                resource_ids.sort_unstable_by(|a, b| b.cmp(a));
+                entity_asset_resource_ids.sort_unstable_by(|a, b| b.cmp(a));
             } else {
-                resource_ids.sort_unstable();
+                entity_asset_resource_ids.sort_unstable();
             }
 
             // 书签为空表示从头查起
@@ -796,6 +806,20 @@ fn is_eligible(
     } else {
         Ok(false)
     };
+}
+
+/// 从链上全部的 resource_id 中筛选出指定类别的
+fn get_resource_ids_by_category(ctx: &mut Blbc, resource_ids: Vec<String>, category: String) -> Result<Vec<String>, String> {
+    let mut eligible_ids: Vec<String> = Vec::new();
+    for resource_id in resource_ids {
+        match ctx.get_metadata(resource_id.clone()) {
+            Ok(metadata) => if metadata.extensions.get("dataType").unwrap().eq(&category){
+                eligible_ids.push(resource_id)
+            },
+            Err(msg) => return Err(msg),
+        }
+    }
+    return Ok(eligible_ids);
 }
 // fn get_datetime_local_from_timestamp(timestamp: u64) -> DateTime<Local> {
 //     // Convert to timestamp in nanoseconds
