@@ -385,7 +385,7 @@ pub fn list_resource_ids_by_conditions(
 
             // 遍历并收集结果
             let mut eligible_ids_num = 0;
-            for resource_id in resource_ids {
+            for resource_id in document_resource_ids {
                 if bookmark_is_found {
                     let metadata = match ctx.get_metadata(resource_id.clone()) {
                         Ok(b) => b,
@@ -446,7 +446,7 @@ pub fn list_resource_ids_by_conditions(
             }
             // 遍历并收集结果
             let mut eligible_ids_num = 0;
-            for resource_id in resource_ids {
+            for resource_id in entity_asset_resource_ids {
                 if bookmark_is_found {
                     let metadata = match ctx.get_metadata(resource_id.clone()) {
                         Ok(b) => b,
