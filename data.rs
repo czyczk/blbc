@@ -28,9 +28,12 @@ pub fn create_plain_data(
     // 检查资源 ID 是否被占用
     let resource_id = &plain_data.metadata.resource_id;
     ink_env::debug_println!("收到资源 ID: {}", &resource_id);
-    if ctx.res_metadata_map.get(resource_id).is_some() {
+    if ctx.resource_ids.contains(resource_id) {
         return Err(format!("资源 ID '{}' 已被占用", resource_id));
     }
+    // if ctx.res_metadata_map.get(resource_id).is_some() {
+    //     return Err(format!("资源 ID '{}' 已被占用", resource_id));
+    // }
 
     // 将数据本体从 Base64 解码
     ink_env::debug_println!("正在从 Base64 解码");
@@ -107,7 +110,7 @@ pub fn create_encrypted_data(
     // 检查资源 ID 是否被占用
     let resource_id = &encrypted_data.metadata.resource_id;
     ink_env::debug_println!("收到资源 ID: {}", &resource_id);
-    if ctx.res_metadata_map.get(resource_id).is_some() {
+    if ctx.resource_ids.contains(resource_id) {
         return Err(format!("资源 ID '{}' 已被占用", resource_id));
     }
 
@@ -185,7 +188,7 @@ pub fn create_offchain_data(
     // 检查资源 ID 是否被占用
     let resource_id = &offchain_data.metadata.resource_id;
     ink_env::debug_println!("收到资源 ID: {}", &resource_id);
-    if ctx.res_metadata_map.get(resource_id).is_some() {
+    if ctx.resource_ids.contains(resource_id) {
         return Err(format!("资源 ID '{}' 已被占用", resource_id));
     }
 
