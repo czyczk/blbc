@@ -9,6 +9,7 @@ pub mod error_code;
 pub mod extension;
 pub mod key_switch;
 pub mod model;
+mod util;
 
 use ink_lang as ink;
 
@@ -127,6 +128,12 @@ mod blbc {
                 Some(it) => it,
                 None => return Err(error_code::CODE_NOT_FOUND.into()),
             };
+            // todo:打印前端传入的 policy
+            let policy = match self.get_policy(resource_id.clone()) {
+                Ok(p) => p,
+                _ => "".into()
+            };
+            ink_env::debug_println!("resource_id:{} policy ：{}",resource_id.clone(),policy);
 
             // 合约现还不支持范型，故不能指定 lifetime，只能把有所有权的东西传出。
             return Ok(metadata.clone());
