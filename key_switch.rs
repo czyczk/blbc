@@ -1,6 +1,8 @@
 extern crate alloc;
+
 use crate::blbc::{Blbc, KSCreated, KSResultCreated, ResourceCreated, EVENT_ID_FOR_RETURNED_VALUE};
 use crate::error_code;
+use crate::util::access_control::enforce_policy;
 use crate::model::ManualJsonfiable;
 use alloc::collections::BTreeMap;
 use ink_prelude::string::String;
@@ -81,8 +83,10 @@ pub fn create_key_switch_trigger(
         // 根据 auth_response_stored 中的结果得到最终判断结果
         if auth_response_stored.result {
             validation_result = true;
-            ink_env::debug_println!("验证结果: {}", validation_result);
+            ink_env::debug_println!("由批复信息得知验证结果: {}", validation_result);
         } else {
+            // 如果无权访问，返回 Err
+            ink_env::debug_println!("由批复信息得知，验证失败，无权访问");
             return Err(error_code::CODE_FORBIDDEN.into());
         }
     } else {
@@ -95,43 +99,21 @@ pub fn create_key_switch_trigger(
                 return Err(msg);
             }
         };
-        // 完善访问策略
-        let s = policy;
-        s.replace("||", "|| r.sub.")
-            .replace("(", "(r.sub.")
-            .replace("&& ", "&& r.sub.");
-        policy = String::from("m = ");
-        policy.push_str(&s);
         // 执行 abac，并得到最终判断结果
-        let mut model_text: String = "
-        [request_definition]
-        r = sub, obj
-
-            [policy_definition]
-        p = act
-
-            [policy_effect]
-        e = some(where (p.eft == allow))
-
-            [matchers]
-        "
-        .into();
-        // TODO: use no-std casbin to edit. 先假装验证通过。
-        validation_result = true;
-        // model_text.push_str(&policy);
-        // let model = match DefaultModel::from_str(&model_text) {
-        //     Ok(m) => { m }
-        //     Err(_)=> {return Err("".into());}
-        // };
-        // let e = match Enforcer::new(model,()) {
-        //     Ok(e) => { e }
-        //     Err(_)=> {return Err("".into());}
-        // };
-        // let dept_identity_btree_map: BTreeMap<String, String> = dept_identity.into();
-        // match e.enforce((dept_identity_btree_map,"","")) {
-        //     Ok(false) => { return Err(error_code::CODE_FORBIDDEN.into()); }
-        //     _ => {}
-        // }
+        match enforce_policy(policy, dept_identity) {
+            Ok(true) => {
+                validation_result = true;
+                ink_env::debug_println!("根据 abac 策略，验证结果: {}", validation_result);
+            }
+            Ok(false) => {
+                // 如果无权访问，返回 Err
+                ink_env::debug_println!("根据 abac 策略，验证失败，无权访问");
+                return Err(error_code::CODE_FORBIDDEN.into());
+            }
+            Err(msg) => {
+                return Err(msg);
+            }
+        }
     }
     // 构建 key_switch_trigger_stored 并存储上链
     let ks_trigger_to_be_stored = KeySwitchTriggerStored {

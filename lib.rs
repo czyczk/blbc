@@ -989,7 +989,7 @@ mod blbc {
                 .create_auth_request(auth_session_id.clone(), sample_auth_request1.clone(), None)
                 .is_ok());
             // user1 创建授权批复
-            let sample_auth_response1 = get_sample_auth_response1(resource_id.clone());
+            let sample_auth_response1 = get_sample_auth_response_true(auth_session_id.clone());
             assert!(blbc
                 .create_auth_response(auth_session_id.clone(), sample_auth_response1.clone(), None)
                 .is_ok());
@@ -1025,7 +1025,7 @@ mod blbc {
                 .create_auth_request(auth_session_id.clone(), sample_auth_request1.clone(), None)
                 .is_ok());
             // user1 创建授权批复
-            let sample_auth_response1 = get_sample_auth_response1(resource_id.clone());
+            let sample_auth_response1 = get_sample_auth_response_true(auth_session_id.clone());
             assert!(blbc
                 .create_auth_response(auth_session_id.clone(), sample_auth_response1.clone(), None)
                 .is_ok());
@@ -1047,7 +1047,7 @@ mod blbc {
                 .create_encrypted_data(sample_encrypted_data, None)
                 .is_ok());
             // user1 直接创建授权批复，期待状态为 ERR
-            let sample_auth_response1 = get_sample_auth_response1(resource_id.clone());
+            let sample_auth_response1 = get_sample_auth_response_true(auth_session_id.clone());
             assert!(blbc
                 .create_auth_response(auth_session_id, sample_auth_response1.clone(), None)
                 .is_err());
@@ -1098,15 +1098,201 @@ mod blbc {
             );
         }
 
+        #[ink::test]
+        fn test_create_key_switch_trigger_with_auth_session_true() {
+            // 初始化
+            let mut blbc = Blbc::default();
+            // user1 创建加密数据
+            let auth_session_id: String = "1".into();
+            let sample_encrypted_data = get_sample_encrypted_data1();
+            let resource_id = sample_encrypted_data.metadata.resource_id.clone();
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data, None)
+                .is_ok());
+            // user1 创建授权请求
+            let sample_auth_request1 = get_sample_auth_request1(resource_id.clone());
+            assert!(blbc
+                .create_auth_request(auth_session_id.clone(), sample_auth_request1.clone(), None)
+                .is_ok());
+            // user1 创建授权批复,批复结果为 true
+            let sample_auth_response1 = get_sample_auth_response_true(auth_session_id.clone());
+            assert!(blbc
+                .create_auth_response(auth_session_id.clone(), sample_auth_response1.clone(), None)
+                .is_ok());
+            // 验证
+            let dept_identity =DepartmentIdentityStored{
+                dept_type: "org".into(),
+                dept_level: 0,
+                dept_name: "dev".into(),
+                super_dept_name: "super_dev".into()
+            };
+            let ks_trigger = KeySwitchTrigger{
+                resource_id,
+                auth_session_id,
+                key_switch_pk: "6666".into()
+            };
+            let ks_session_id :String = "123".into();
+            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(),dept_identity,ks_trigger,"888".into()).is_ok());
+            assert_eq!(blbc.ks_trigger_map.get(ks_session_id).unwrap().validation_result,true);
+        }
+
+        #[ink::test]
+        fn test_create_key_switch_trigger_with_auth_session_false() {
+            // 初始化
+            let mut blbc = Blbc::default();
+            // user1 创建加密数据
+            let auth_session_id: String = "1".into();
+            let sample_encrypted_data = get_sample_encrypted_data1();
+            let resource_id = sample_encrypted_data.metadata.resource_id.clone();
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data, None)
+                .is_ok());
+            // user1 创建授权请求
+            let sample_auth_request1 = get_sample_auth_request1(resource_id.clone());
+            assert!(blbc
+                .create_auth_request(auth_session_id.clone(), sample_auth_request1.clone(), None)
+                .is_ok());
+            // user1 创建授权批复,批复结果为 false
+            let sample_auth_response1 = get_sample_auth_response_false(auth_session_id.clone());
+            assert!(blbc
+                .create_auth_response(auth_session_id.clone(), sample_auth_response1.clone(), None)
+                .is_ok());
+            // 验证
+            let dept_identity =DepartmentIdentityStored{
+                dept_type: "org".into(),
+                dept_level: 0,
+                dept_name: "dev".into(),
+                super_dept_name: "super_dev".into()
+            };
+            let ks_trigger = KeySwitchTrigger{
+                resource_id,
+                auth_session_id,
+                key_switch_pk: "6666".into()
+            };
+            let ks_session_id :String = "123".into();
+            assert_eq!(Err(error_code::CODE_FORBIDDEN.into()),blbc.create_key_switch_trigger(ks_session_id.clone(),dept_identity,ks_trigger,"888".into()));
+        }
+
+        #[ink::test]
+        fn test_create_key_switch_trigger_with_non_existent_auth_session_id() {
+            // 初始化
+            let mut blbc = Blbc::default();
+            // user1 创建加密数据
+            let auth_session_id: String = "1".into();
+            let sample_encrypted_data = get_sample_encrypted_data1();
+            let resource_id = sample_encrypted_data.metadata.resource_id.clone();
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data, None)
+                .is_ok());
+            // user1 创建授权请求
+            let sample_auth_request1 = get_sample_auth_request1(resource_id.clone());
+            assert!(blbc
+                .create_auth_request(auth_session_id.clone(), sample_auth_request1.clone(), None)
+                .is_ok());
+            // user1 创建授权批复,批复结果为 true
+            let sample_auth_response1 = get_sample_auth_response_true(auth_session_id.clone());
+            assert!(blbc
+                .create_auth_response(auth_session_id.clone(), sample_auth_response1.clone(), None)
+                .is_ok());
+            // 验证
+            let dept_identity =DepartmentIdentityStored{
+                dept_type: "org".into(),
+                dept_level: 0,
+                dept_name: "dev".into(),
+                super_dept_name: "super_dev".into(),
+            };
+            // 不存在的 auth_session_id
+            let ks_trigger = KeySwitchTrigger{
+                resource_id,
+                auth_session_id:"2".into(),
+                key_switch_pk: "6666".into()
+            };
+            let ks_session_id :String = "123".into();
+            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(),dept_identity,ks_trigger,"888".into()).is_err());
+        }
+
+        #[ink::test]
+        fn test_create_key_switch_trigger_with_auth_session_and_different_resource_ids() {
+            // 初始化
+            let mut blbc = Blbc::default();
+            // user1 创建加密数据 a
+            let auth_session_id_a: String = "1".into();
+            let sample_encrypted_data_a = get_sample_encrypted_data1();
+            let resource_id_a = sample_encrypted_data_a.metadata.resource_id.clone();
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data_a, None)
+                .is_ok());
+            // user1 创建加密数据 b
+            let auth_session_id_b: String = "2".into();
+            let sample_encrypted_data_b = get_sample_encrypted_data2();
+            let resource_id_b = sample_encrypted_data_b.metadata.resource_id.clone();
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data_b, None)
+                .is_ok());
+            // user1 创建对 a 的授权请求
+            let sample_auth_request_a = get_sample_auth_request1(resource_id_a.clone());
+            assert!(blbc
+                .create_auth_request(auth_session_id_a.clone(), sample_auth_request_a.clone(), None)
+                .is_ok());
+            // user1 创建对 a 的授权批复,批复结果为 true
+            let sample_auth_response_a = get_sample_auth_response_true(auth_session_id_a.clone());
+            assert!(blbc
+                .create_auth_response(auth_session_id_a.clone(), sample_auth_response_a.clone(), None)
+                .is_ok());
+            // 使用资源 b 的 resource_id 来验证，期待结果为失败
+            let dept_identity =DepartmentIdentityStored{
+                dept_type: "org".into(),
+                dept_level: 0,
+                dept_name: "dev".into(),
+                super_dept_name: "super_dev".into(),
+            };
+            let ks_trigger = KeySwitchTrigger{
+                resource_id: resource_id_b,
+                auth_session_id: auth_session_id_a,
+                key_switch_pk: "6666".into()
+            };
+            let ks_session_id :String = "123".into();
+            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(),dept_identity,ks_trigger,"888".into()).is_err());
+        }
+
+        #[ink::test]
+        fn test_create_key_switch_trigger_with_valid_policy_process() {
+            // 初始化
+            let mut blbc = Blbc::default();
+            // user1 创建加密数据
+            let auth_session_id: String = "1".into();
+            let policy:String = "(DeptName==''||(DeptType=='dev'&&DeptLevel>2))".into();
+            let sample_encrypted_data = get_sample_encrypted_data_with_policy(policy);
+            let resource_id = sample_encrypted_data.metadata.resource_id.clone();
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data, None)
+                .is_ok());
+            // 验证
+            let dept_identity =DepartmentIdentityStored{
+                dept_type: "Dev".into(),
+                dept_level: 2,
+                dept_name: "dev".into(),
+                super_dept_name: "super_dev".into()
+            };
+            let ks_trigger = KeySwitchTrigger{
+                resource_id,
+                auth_session_id: "".into(),
+                key_switch_pk: "6666".into()
+            };
+            let ks_session_id :String = "123".into();
+            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(),dept_identity,ks_trigger,"888".into()).is_err());
+            assert_eq!(blbc.ks_trigger_map.get(ks_session_id).unwrap().validation_result,true);
+        }
+
         // #[ink::test]
         // fn test_create_key_switch_result_with_normal_process() {
         //     // 初始化
         //     let mut blbc = Blbc::default();
         //     let ks_result = KeySwitchResult{
-        //         key_switch_session_id: "0987645".to_string(),
-        //         share: "".to_string(),
-        //         zk_proof: "".to_string(),
-        //         key_switch_pk: "".to_string()
+        //         key_switch_session_id: "0987645".into(),
+        //         share: "".into(),
+        //         zk_proof: "".into(),
+        //         key_switch_pk: "".into()
         //     };
         //     // 直接调用，期待状态为 ERROR 且错误内容为 codeNotFound
         //     assert_eq!(
@@ -1118,7 +1304,7 @@ mod blbc {
 
         const DATA1: &str = "data1";
         const DATA2: &str = "data2";
-        //const DATA3: &str = "data3";
+        const DATA3: &str = "data3";
 
         // 明文数据
         // 资源 ID: "001"
@@ -1246,6 +1432,39 @@ mod blbc {
             };
         }
 
+        // 加密数据
+        // 资源 ID: "103"
+        // 名称: "Sample Encrypted Data 3"
+        // 内容: base64(encrypt(data3))
+        fn get_sample_encrypted_data_with_policy(policy:String) -> EncryptedData {
+            use ink_prelude::string::String;
+
+            let mut hasher = Sha256::new();
+            hasher.update(DATA3.as_bytes());
+            let hash_bytes = hasher.finalize();
+            let extension_map: BTreeMap<String, String> = BTreeMap::from([
+                ("dataType".into(), "EntityAsset".into()),
+                ("name".into(), "Sample Encrypted Data 3".into()),
+                ("documentType".into(), DocumentType::UsageDocument.into()),
+                ("headDocumentId".into(), "1000".into()),
+                ("designDocumentId".into(), "101".into()),
+            ]);
+
+            return EncryptedData {
+                metadata: ResMetadata {
+                    resource_type: ResourceType::Encrypted,
+                    resource_id: "103".into(),
+                    hash: base64::encode(hash_bytes),
+                    size: DATA3.as_bytes().len() as u64,
+                    extensions: extension_map,
+                },
+                // 加解密都在链码外进行
+                data: base64::encode(DATA3.as_bytes()),
+                key: base64::encode("123456".as_bytes()),
+                policy,
+            };
+        }
+
         // 链下数据
         // 资源 ID: "201"
         // 名称: "Sample Offchain Data 1"
@@ -1335,23 +1554,23 @@ mod blbc {
             };
         }
 
-        fn get_sample_auth_response1(resource_id: String) -> AuthResponse {
+        fn get_sample_auth_response_true(auth_session_id: String) -> AuthResponse {
             let extension_map: BTreeMap<String, String> =
                 BTreeMap::from([("dataType".into(), "authResponse".into())]);
 
             return AuthResponse {
-                auth_session_id: "1".into(),
+                auth_session_id,
                 extensions: extension_map,
                 result: true,
             };
         }
 
-        fn get_sample_auth_response2(resource_id: String) -> AuthResponse {
+        fn get_sample_auth_response_false(auth_session_id: String) -> AuthResponse {
             let extension_map: BTreeMap<String, String> =
                 BTreeMap::from([("dataType".into(), "authResponse".into())]);
 
             return AuthResponse {
-                auth_session_id: "2".into(),
+                auth_session_id,
                 extensions: extension_map,
                 result: false,
             };

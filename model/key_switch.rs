@@ -1,6 +1,6 @@
 extern crate alloc;
 use super::{datetime::ScaleDateTimeLocal, ManualJsonfiable};
-use crate::alloc::string::ToString;
+//use crate::alloc::string::ToString;
 use alloc::collections::BTreeMap;
 use ink_env::AccountId;
 use ink_prelude::format;
@@ -122,13 +122,13 @@ pub struct DepartmentIdentityStored {
     pub super_dept_name: String,
 }
 
-impl Into<BTreeMap<String, String>> for DepartmentIdentityStored {
-    fn into(self) -> BTreeMap<String, String> {
-        return BTreeMap::from([
-            ("dept_type".into(), self.dept_type),
-            ("dept_level".into(), self.dept_level.to_string()),
-            ("dept_name".into(), self.dept_name),
-            ("super_dept_name".into(), self.super_dept_name),
-        ]);
-    }
-}
+// impl Into<BTreeMap<String, String>> for DepartmentIdentityStored {
+//     fn into(self) -> BTreeMap<String, String> {
+//         return BTreeMap::from([
+//             ("dept_type".into(), self.dept_type),
+//             ("dept_level".into(), self.dept_level.to_string()),
+//             ("dept_name".into(), self.dept_name),
+//             ("super_dept_name".into(), self.super_dept_name),
+//         ]);
+//     }
+// }
