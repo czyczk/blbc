@@ -332,7 +332,7 @@ fn tokenize(policy: String, dept_identity: DepartmentIdentityStored) -> Result<V
     let length = policy.len();
     let mut i = 0;
     while i < length {
-        ink_env::debug_println!("i的值: {},第i个字符{}", i,policy_as_chars[i]);
+        //ink_env::debug_println!("i的值: {},第i个字符{}", i,policy_as_chars[i]);
         if policy_as_chars[i].eq(&'(') {
             // 左括号
             let token = Token {

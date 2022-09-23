@@ -1261,7 +1261,7 @@ mod blbc {
             let mut blbc = Blbc::default();
             // user1 创建加密数据
             let auth_session_id: String = "1".into();
-            let policy:String = "(DeptName==''||(DeptType=='dev'&&DeptLevel>2))".into();
+            let policy:String = "(DeptName!='wang'&&SuperDeptName=='xi'||DeptLevel>=2)".into();
             let sample_encrypted_data = get_sample_encrypted_data_with_policy(policy);
             let resource_id = sample_encrypted_data.metadata.resource_id.clone();
             assert!(blbc
@@ -1269,10 +1269,10 @@ mod blbc {
                 .is_ok());
             // 验证
             let dept_identity =DepartmentIdentityStored{
-                dept_type: "Dev".into(),
+                dept_type: "dev9".into(),
                 dept_level: 2,
-                dept_name: "dev".into(),
-                super_dept_name: "super_dev".into()
+                dept_name: "wang".into(),
+                super_dept_name: "xi".into()
             };
             let ks_trigger = KeySwitchTrigger{
                 resource_id,
@@ -1280,8 +1280,36 @@ mod blbc {
                 key_switch_pk: "6666".into()
             };
             let ks_session_id :String = "123".into();
-            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(),dept_identity,ks_trigger,"888".into()).is_err());
+            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(),dept_identity,ks_trigger,"888".into()).is_ok());
             assert_eq!(blbc.ks_trigger_map.get(ks_session_id).unwrap().validation_result,true);
+        }
+
+        #[ink::test]
+        fn test_create_key_switch_trigger_with_invalid_policy_process() {
+            // 初始化
+            let mut blbc = Blbc::default();
+            // user1 创建加密数据
+            let auth_session_id: String = "1".into();
+            let policy:String = "(DeptType=='dev'&&DeptLevel==2)".into();
+            let sample_encrypted_data = get_sample_encrypted_data_with_policy(policy);
+            let resource_id = sample_encrypted_data.metadata.resource_id.clone();
+            assert!(blbc
+                .create_encrypted_data(sample_encrypted_data, None)
+                .is_ok());
+            // 验证
+            let dept_identity =DepartmentIdentityStored{
+                dept_type: "dev".into(),
+                dept_level: 3,
+                dept_name: "".into(),
+                super_dept_name: "xi".into()
+            };
+            let ks_trigger = KeySwitchTrigger{
+                resource_id,
+                auth_session_id: "".into(),
+                key_switch_pk: "6666".into()
+            };
+            let ks_session_id :String = "123".into();
+            assert_eq!(Err(error_code::CODE_FORBIDDEN.into()),blbc.create_key_switch_trigger(ks_session_id.clone(),dept_identity,ks_trigger,"888".into()));
         }
 
         // #[ink::test]
