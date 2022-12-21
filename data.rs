@@ -35,6 +35,11 @@ pub fn create_plain_data(
     //     return Err(format!("资源 ID '{}' 已被占用", resource_id));
     // }
 
+
+    ink_env::debug_println!("chain extension尝试获取链上随机数据.....");
+    ink_env::debug_println!("chain extension第一次获取到的链上随机数据{:?}",ctx.env().extension().fetch_random([0_u8; 32]));
+    ink_env::debug_println!("chain extension第二次获取到的链上随机数据{:?}",ctx.env().extension().fetch_random([0_u8; 32]));
+
     // 将数据本体从 Base64 解码
     ink_env::debug_println!("正在从 Base64 解码");
     let data_bytes = match base64::decode(plain_data.data) {
