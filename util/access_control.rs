@@ -5,7 +5,13 @@ use ink_prelude::string::ToString;
 use ink_prelude::vec::Vec;
 use crate::error_code;
 use crate::model::key_switch::DepartmentIdentityStored;
-
+use x509_cert::Certificate;
+use der::{
+    asn1::{BitStringRef, ContextSpecific, ObjectIdentifier, UIntRef},
+    Decode, DecodeValue, Encode, FixedTag, Header, Reader, Tag, Tagged,
+};
+use spki::AlgorithmIdentifier;
+use x509_cert::*;
 pub fn enforce_policy(policy: String, dept_identity: DepartmentIdentityStored) -> Result<bool, String> {
     // 检查输入的 policy 的内容
     policy.replace(" ", "");
@@ -499,6 +505,12 @@ fn tokenize(policy: String, dept_identity: DepartmentIdentityStored) -> Result<V
     return Ok(tokens);
 }
 
+fn test(){
+    let der_encoded_cert =
+        include_bytes!("/Users/lizhen/Desktop/certificatename.der");
+    let result = Certificate::from_der(der_encoded_cert).unwrap();
+    // println!("{:?}", result.tbs_certificate.extensions);
+}
 #[derive(Debug)]
 /// Token 结构体表示词法分析后产生的词法单元
 struct Token {
@@ -549,4 +561,86 @@ enum Category {
     True,
     // 布尔值,仅在后缀表达式计算时使用
     False,
+}
+
+pub struct DeferDecodeCertificate<'a> {
+    /// tbsCertificate       TBSCertificate,
+    pub tbs_certificate: &'a [u8],
+    /// signatureAlgorithm   AlgorithmIdentifier,
+    pub signature_algorithm: &'a [u8],
+    /// signature            BIT STRING
+    pub signature: &'a [u8],
+}
+
+impl<'a> DecodeValue<'a> for DeferDecodeCertificate<'a> {
+    fn decode_value<R: Reader<'a>>(
+        reader: &mut R,
+        header: Header,
+    ) -> der::Result<DeferDecodeCertificate<'a>> {
+        reader.read_nested(header.length, |reader| {
+            Ok(Self {
+                tbs_certificate: reader.tlv_bytes()?,
+                signature_algorithm: reader.tlv_bytes()?,
+                signature: reader.tlv_bytes()?,
+            })
+        })
+    }
+}
+
+impl FixedTag for DeferDecodeCertificate<'_> {
+    const TAG: Tag = Tag::Sequence;
+}
+
+///Structure supporting deferred decoding of fields in the TBSCertificate SEQUENCE
+pub struct DeferDecodeTbsCertificate<'a> {
+    /// Decoded field
+    pub version: u8,
+    /// Defer decoded field
+    pub serial_number: &'a [u8],
+    /// Defer decoded field
+    pub signature: &'a [u8],
+    /// Defer decoded field
+    pub issuer: &'a [u8],
+    /// Defer decoded field
+    pub validity: &'a [u8],
+    /// Defer decoded field
+    pub subject: &'a [u8],
+    /// Defer decoded field
+    pub subject_public_key_info: &'a [u8],
+    /// Decoded field (never present)
+    pub issuer_unique_id: Option<BitStringRef<'a>>,
+    /// Decoded field (never present)
+    pub subject_unique_id: Option<BitStringRef<'a>>,
+    /// Defer decoded field
+    pub extensions: &'a [u8],
+}
+
+impl<'a> DecodeValue<'a> for DeferDecodeTbsCertificate<'a> {
+    fn decode_value<R: Reader<'a>>(
+        reader: &mut R,
+        header: Header,
+    ) -> der::Result<DeferDecodeTbsCertificate<'a>> {
+        reader.read_nested(header.length, |reader| {
+            let version = ContextSpecific::decode_explicit(reader, ::der::TagNumber::N0)?
+                .map(|cs| cs.value)
+                .unwrap_or_else(Default::default);
+
+            Ok(Self {
+                version,
+                serial_number: reader.tlv_bytes()?,
+                signature: reader.tlv_bytes()?,
+                issuer: reader.tlv_bytes()?,
+                validity: reader.tlv_bytes()?,
+                subject: reader.tlv_bytes()?,
+                subject_public_key_info: reader.tlv_bytes()?,
+                issuer_unique_id: reader.decode()?,
+                subject_unique_id: reader.decode()?,
+                extensions: reader.tlv_bytes()?,
+            })
+        })
+    }
+}
+
+impl FixedTag for DeferDecodeTbsCertificate<'_> {
+    const TAG: Tag = Tag::Sequence;
 }

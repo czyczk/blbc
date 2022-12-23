@@ -18,7 +18,11 @@ scale = { package = "parity-scale-codec", version = "3", default-features = fals
 
 base64 = { version = "0.13.0", default-features = false, features = ["alloc"] }
 chrono = { version = "0.4.19", default-features = false, features = ["alloc"] }
-
+x509-cert = { version="0.1.0", path='./x509-cert'}
+const-oid = { version = "0.9", features = ["db"], path = "./const-oid" }
+der = { version = "0.6", features = ["derive", "alloc", "flagset"], path = "./der" }
+flagset = { version = "0.4.3" }
+spki = { version = "0.6", path = "./spki" }
 [dev-dependencies]
 sha2 = "0.10.0"
 
