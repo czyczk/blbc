@@ -505,11 +505,33 @@ fn tokenize(policy: String, dept_identity: DepartmentIdentityStored) -> Result<V
     return Ok(tokens);
 }
 
-fn test(){
+pub(crate) fn test(){
     let der_encoded_cert =
-        include_bytes!("/Users/lizhen/Desktop/certificatename.der");
+        include_bytes!("./certificatename.der");
     let result = Certificate::from_der(der_encoded_cert).unwrap();
+    let extensions =  result.tbs_certificate.extensions.unwrap();
+    for extension in extensions.iter(){
+        let rs = extension.extn_value;
+        // let rs2 = decimals_to_string(rs);
+        match decimals_to_string(&extension.extn_value){
+            Ok(value) => {        panic!("{:?} {:?}", extension.extn_id,value)  }
+            Err(_) => {}
+        }
+    }
+    //panic!("{:?}", result.tbs_certificate.extensions);
     // println!("{:?}", result.tbs_certificate.extensions);
+}
+
+pub fn decimals_to_string(dec_vec: &[u8]) -> Result<String, String>{
+    let mut text = String::new();
+    for d in dec_vec.iter(){
+        if !(d >=  &32 && d <= &126) {
+           return Err("the number is outside the ascii range".to_string());
+        } else {
+            text.push(*d as char);
+        }
+    }
+    Ok(text)
 }
 #[derive(Debug)]
 /// Token 结构体表示词法分析后产生的词法单元
