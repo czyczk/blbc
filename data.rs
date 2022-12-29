@@ -275,14 +275,8 @@ pub fn list_resource_ids_by_creator(
 
     ink_env::debug_println!("chain extension尝试获取链上证书.....");
     ink_env::debug_println!("chain extension尝试获取{:?}的链上证书.....",&creator);
-    let value: Vec<u8>;
-    match ctx.env().extension().fetch_account_certificate(creator.clone()) {
-        Ok(t) => {
-            value = t;
-            ink_env::debug_println!("chain extension获取到的证书{:?}",value);
-        }
-        Err(e) => { ink_env::debug_println!("chain extension获取链上证书失败！！！") }
-    }
+    // let value = ctx.env().extension().fetch_account_certificate(creator.clone());
+    // ink_env::debug_println!("chain extension获取到的证书{:?}",value);
 
     // 获取全部 resource_id 并排序
     let mut resource_ids = ctx.resource_ids.clone();

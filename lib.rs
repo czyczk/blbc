@@ -35,8 +35,9 @@ pub trait FetchCertificate {
 
     /// Note: this gives the operation a corresponding `func_id` (1101 in this case),
     /// and the chain-side chain extension will get the `func_id` to do further operations.
+    /// 设置能支持证书的最大长度为2000
     #[ink(extension = 1101, returns_result = false)]
-    fn fetch_account_certificate( accound_id: ink_env::AccountId) -> Vec<u8>;
+    fn fetch_account_certificate( accound_id: ink_env::AccountId) -> [u8;2000];
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, scale::Encode, scale::Decode)]
