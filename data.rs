@@ -35,11 +35,6 @@ pub fn create_plain_data(
     //     return Err(format!("资源 ID '{}' 已被占用", resource_id));
     // }
 
-
-    // ink_env::debug_println!("chain extension尝试获取链上随机数据.....");
-    // ink_env::debug_println!("chain extension第一次获取到的链上随机数据{:?}",ctx.env().extension().fetch_random([0_u8; 32]));
-    // ink_env::debug_println!("chain extension第二次获取到的链上随机数据{:?}",ctx.env().extension().fetch_random([0_u8; 32]));
-
     // 将数据本体从 Base64 解码
     ink_env::debug_println!("正在从 Base64 解码");
     let data_bytes = match base64::decode(plain_data.data) {
@@ -278,6 +273,17 @@ pub fn list_resource_ids_by_creator(
     // 获取当前调用者
     let creator = ctx.env().caller();
 
+    ink_env::debug_println!("chain extension尝试获取链上证书.....");
+    ink_env::debug_println!("chain extension尝试获取{:?}的链上证书.....",&creator);
+    let value: Vec<u8>;
+    match ctx.env().extension().fetch_account_certificate(creator.clone()) {
+        Ok(t) => {
+            value = t;
+            ink_env::debug_println!("chain extension获取到的证书{:?}",value);
+        }
+        Err(e) => { ink_env::debug_println!("chain extension获取链上证书失败！！！") }
+    }
+
     // 获取全部 resource_id 并排序
     let mut resource_ids = ctx.resource_ids.clone();
     if is_desc {
@@ -364,7 +370,7 @@ pub fn list_resource_ids_by_conditions(
 
             // 获取全部文档 resource_id 并排序
             let mut document_resource_ids = match get_resource_ids_by_category(ctx, resource_ids.clone(), "Document".into()) {
-                Ok(t) => {t}
+                Ok(t) => { t }
                 Err(msg) => return Err(msg),
             };
             if document_query_conditions.common_query_conditions.is_desc {
@@ -423,7 +429,7 @@ pub fn list_resource_ids_by_conditions(
 
             // 获取全部资产 resource_id 并排序
             let mut entity_asset_resource_ids = match get_resource_ids_by_category(ctx, resource_ids.clone(), "EntityAsset".into()) {
-                Ok(t) => {t}
+                Ok(t) => { t }
                 Err(msg) => return Err(msg),
             };
             if entity_asset_query_conditions
@@ -821,7 +827,7 @@ fn get_resource_ids_by_category(ctx: &mut Blbc, resource_ids: Vec<String>, categ
     let mut eligible_ids: Vec<String> = Vec::new();
     for resource_id in resource_ids {
         match ctx.get_metadata(resource_id.clone()) {
-            Ok(metadata) => if metadata.extensions.get("dataType").unwrap().eq(&category){
+            Ok(metadata) => if metadata.extensions.get("dataType").unwrap().eq(&category) {
                 eligible_ids.push(resource_id)
             },
             Err(msg) => return Err(msg),

@@ -103,7 +103,7 @@ pub fn create_key_switch_trigger(
         // let mut rand_extension = Blbc::default();
         // ctx.env().extension().update([0_u8; 32]).expect("update must work");
         // ink_env::debug_println!("chain extension第二次获取到的链上随机数据{:?}",ctx.env().extension().get());
-       access_control::test();
+        //access_control::test();
         // 执行 abac，并得到最终判断结果
         match enforce_policy(policy, dept_identity) {
             Ok(true) => {
