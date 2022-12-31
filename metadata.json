@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0x80db3a9c146046f7477148caec424d7eb7aa823d9e9ea128168a466a60566e56",
+    "hash": "0xb729202a34dceb6f5c1a8088f6fa39d80050eba5ed70c7b55ee82b269a102053",
     "language": "ink! 3.4.0",
     "compiler": "rustc 1.62.0-nightly"
   },
@@ -174,11 +174,7 @@
               }
             }
           ],
-          "docs": [
-            " Seed a random value by passing some known argument `subject` to the runtime's",
-            " random source. Then, update the current `value` stored in this contract with the",
-            " new random value."
-          ],
+          "docs": [],
           "label": "create_plain_data",
           "mutates": true,
           "payable": false,
