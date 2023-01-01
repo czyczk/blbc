@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0xe5ef9dafa04b67e86e61242b63694f7b12ac605282a806bb307281531567feb2",
+    "hash": "0x94047cbde4d746601e36803ed42b71765b8caaa5bc66da5a62975a6b951527d2",
     "language": "ink! 3.4.0",
     "compiler": "rustc 1.62.0-nightly"
   },
@@ -24,21 +24,6 @@
       ],
       "docs": [],
       "events": [
-        {
-          "args": [
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "new",
-              "type": {
-                "displayName": [],
-                "type": 6
-              }
-            }
-          ],
-          "docs": [],
-          "label": "RandomUpdated"
-        },
         {
           "args": [
             {
@@ -651,21 +636,12 @@
               }
             },
             {
-              "label": "dept_identity",
-              "type": {
-                "displayName": [
-                  "DepartmentIdentityStored"
-                ],
-                "type": 50
-              }
-            },
-            {
               "label": "ks_trigger",
               "type": {
                 "displayName": [
                   "KeySwitchTrigger"
                 ],
-                "type": 51
+                "type": 50
               }
             },
             {
@@ -698,7 +674,7 @@
                 "displayName": [
                   "KeySwitchResult"
                 ],
-                "type": 52
+                "type": 51
               }
             }
           ],
@@ -722,7 +698,7 @@
                 "displayName": [
                   "KeySwitchResultQuery"
                 ],
-                "type": 53
+                "type": 52
               }
             }
           ],
@@ -734,7 +710,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 54
+            "type": 53
           },
           "selector": "0xfcff3b10"
         },
@@ -758,7 +734,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 55
+            "type": 54
           },
           "selector": "0x04fec934"
         }
@@ -2372,43 +2348,6 @@
             "composite": {
               "fields": [
                 {
-                  "name": "dept_type",
-                  "type": 1,
-                  "typeName": "String"
-                },
-                {
-                  "name": "dept_level",
-                  "type": 4,
-                  "typeName": "u8"
-                },
-                {
-                  "name": "dept_name",
-                  "type": 1,
-                  "typeName": "String"
-                },
-                {
-                  "name": "super_dept_name",
-                  "type": 1,
-                  "typeName": "String"
-                }
-              ]
-            }
-          },
-          "path": [
-            "blbc",
-            "model",
-            "key_switch",
-            "DepartmentIdentityStored"
-          ]
-        }
-      },
-      {
-        "id": 51,
-        "type": {
-          "def": {
-            "composite": {
-              "fields": [
-                {
                   "name": "resource_id",
                   "type": 1,
                   "typeName": "String"
@@ -2435,7 +2374,7 @@
         }
       },
       {
-        "id": 52,
+        "id": 51,
         "type": {
           "def": {
             "composite": {
@@ -2472,7 +2411,7 @@
         }
       },
       {
-        "id": 53,
+        "id": 52,
         "type": {
           "def": {
             "composite": {
@@ -2499,7 +2438,7 @@
         }
       },
       {
-        "id": 54,
+        "id": 53,
         "type": {
           "def": {
             "variant": {
@@ -2541,7 +2480,7 @@
         }
       },
       {
-        "id": 55,
+        "id": 54,
         "type": {
           "def": {
             "variant": {
@@ -2549,7 +2488,7 @@
                 {
                   "fields": [
                     {
-                      "type": 56
+                      "type": 55
                     }
                   ],
                   "index": 0,
@@ -2570,7 +2509,7 @@
           "params": [
             {
               "name": "T",
-              "type": 56
+              "type": 55
             },
             {
               "name": "E",
@@ -2583,7 +2522,7 @@
         }
       },
       {
-        "id": 56,
+        "id": 55,
         "type": {
           "def": {
             "sequence": {
