@@ -23,6 +23,9 @@ const-oid = { version = "0.9", features = ["db"], path = "./const-oid" }
 der = { version = "0.6", features = ["derive", "alloc", "flagset"], path = "./der" }
 flagset = { version = "0.4.3" }
 spki = { version = "0.6", path = "./spki" }
+serde_json = { version = "1.0", default-features = false, features=["alloc"] }
+
+
 [dev-dependencies]
 sha2 = "0.10.0"
 
@@ -37,6 +40,7 @@ crate-type = [
 [features]
 default = ["std"]
 std = [
+    "serde_json/std",
     "ink_metadata/std",
     "ink_env/std",
     "ink_storage/std",

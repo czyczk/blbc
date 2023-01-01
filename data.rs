@@ -1,4 +1,5 @@
 use core::iter::FromIterator;
+use der::Decode;
 use ink::codegen::{EmitEvent, Env};
 use ink_env::hash::Sha2x256;
 use ink_env::AccountId;
@@ -8,14 +9,13 @@ use ink_prelude::string::String;
 use ink_prelude::vec::Vec;
 
 use crate::model::query::{DocumentQueryConditions, EntityAssetQueryConditions, QueryConditions};
-use crate::{
-    blbc::{Blbc, ResourceCreated, EVENT_ID_FOR_RETURNED_VALUE},
-    model::{
-        data::{EncryptedData, OffchainData, PlainData, ResMetadataStored},
-        datetime::ScaleDateTimeLocal,
-        query::IDsWithPagination,
-    },
-};
+use crate::{blbc::{Blbc, ResourceCreated, EVENT_ID_FOR_RETURNED_VALUE}, CertificateReadErr, model::{
+    data::{EncryptedData, OffchainData, PlainData, ResMetadataStored},
+    datetime::ScaleDateTimeLocal,
+    query::IDsWithPagination,
+}};
+use crate::util::{access_control, parse_certificate};
+use crate::util::parse_certificate::get_dept_identity_by_chain_extension;
 
 pub fn create_plain_data(
     ctx: &mut Blbc,
@@ -197,6 +197,24 @@ pub fn create_offchain_data(
         return Err(format!("资源 cid 不可为空"));
     }
 
+    // let der_encoded_cert =
+    //     include_bytes!("./util/alice.der");
+    // let result = x509_cert::Certificate::from_der(der_encoded_cert).unwrap();
+    // let validity = result.tbs_certificate.validity;
+    // let before_time = validity.not_before;
+    // let after_time = validity.not_after;
+    // let extensions =  result.tbs_certificate.extensions.unwrap();
+    // let test = after_time.to_date_time().unix_duration();
+    // let timestamp2 = ctx.env().block_timestamp();
+    // ink_env::debug_println!("afterTime: {:?} beforeTime: {:?} block时间{:?}", after_time.to_date_time().unix_duration().as_secs(), before_time.to_date_time().unix_duration().as_secs(),timestamp2);
+    //
+    // // 验证证书签名是否正确
+    //
+    // // 验证证书是否过期
+    //
+    // // 从证书解析出账户部门信息 dept——identity
+    // let dept_identity = parse_certificate::get_department_identity_easier(&extensions);
+
     // 计算存储的哈希与大小
     let size_stored = offchain_data.cid.len() as u64;
     let cid = offchain_data.cid.clone();
@@ -270,13 +288,12 @@ pub fn list_resource_ids_by_creator(
         return Err("page_size 应为正整数".into());
     }
 
+    // 获取当前合约调用者对应的部门身份信息
+    let dept_identity = get_dept_identity_by_chain_extension(ctx)?;
+    ink_env::debug_println!("当前合约调用者的部门身份信息{:?}",dept_identity.clone());
+
     // 获取当前调用者
     let creator = ctx.env().caller();
-
-    ink_env::debug_println!("chain extension尝试获取链上证书.....");
-    ink_env::debug_println!("chain extension尝试获取{:?}的链上证书.....",&creator);
-    // let value = ctx.env().extension().fetch_account_certificate(creator.clone());
-    // ink_env::debug_println!("chain extension获取到的证书{:?}",value);
 
     // 获取全部 resource_id 并排序
     let mut resource_ids = ctx.resource_ids.clone();

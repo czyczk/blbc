@@ -16,18 +16,6 @@ use ink_env::Environment;
 use ink_prelude::vec::Vec;
 
 
-/// When we have a custom type we need to make sure that it can be encoded and decoded.
-// #[derive(scale::Encode, scale::Decode)]
-// pub struct Custom {
-//     /// We want to demonstrate how to read dynamically sized types from a chain extension, so we'll
-//     /// use a type, `Vec`, whose size we cannot necessarily calculate at compile time.
-//     inner: ink_prelude::vec::Vec<u8>,
-// }
-
-/// This is an example of how an ink! contract may call the Substrate
-/// runtime function `RandomnessCollectiveFlip::random_seed`. See the
-/// file `runtime/chain-extension-example.rs` for that implementation.
-///
 /// Here we define the operations to interact with the Substrate runtime.
 #[ink::chain_extension]
 pub trait FetchCertificate {
@@ -35,7 +23,7 @@ pub trait FetchCertificate {
 
     /// Note: this gives the operation a corresponding `func_id` (1101 in this case),
     /// and the chain-side chain extension will get the `func_id` to do further operations.
-    /// 设置能支持证书的最大长度为2000
+    /// 此处定义一个 chain extension 函数，函数 id =1101, 与 runtime 侧对应
     #[ink(extension = 1101, returns_result = false)]
     fn fetch_account_certificate( accound_id: ink_env::AccountId) -> [u8;2000];
 }
@@ -118,14 +106,6 @@ mod blbc {
         pub ks_trigger_map: Mapping<String, KeySwitchTriggerStored>,
         /// 存储通过 ${ks_session_id}_${creator_as_base64} 可以找到的 KeySwitchResultStored
         pub ks_result_map: Mapping<String, KeySwitchResultStored>,
-        //value: [u8; 32],
-    }
-
-
-    #[ink(event)]
-    pub struct RandomUpdated {
-        #[ink(topic)]
-        new: [u8; 32],
     }
 
     #[ink(event)]
@@ -159,26 +139,6 @@ mod blbc {
         pub fn default() -> Self {
             ink_lang::utils::initialize_contract(|_: &mut Self| {})
         }
-
-        /// Seed a random value by passing some known argument `subject` to the runtime's
-        /// random source. Then, update the current `value` stored in this contract with the
-        /// new random value.
-        // #[ink(message)]
-        // pub fn update(&mut self, subject: [u8; 32]) -> Result<(), RandomReadErr> {
-        //     // Get the on-chain random seed
-        //     let new_random = self.env().extension().fetch_random(subject)?;
-        //     self.value = new_random;
-        //     // Emit the `RandomUpdated` event when the random seed
-        //     // is successfully fetched.
-        //     self.env().emit_event(RandomUpdated { new: new_random });
-        //     Ok(())
-        // }
-        //
-        // /// Simply returns the current value.
-        // #[ink(message)]
-        // pub fn get(&self) -> [u8; 32] {
-        //     self.value
-        // }
 
         #[ink(message)]
         pub fn create_plain_data(
@@ -385,14 +345,12 @@ mod blbc {
         pub fn create_key_switch_trigger(
             &mut self,
             ks_session_id: String,
-            dept_identity: DepartmentIdentityStored,
             ks_trigger: KeySwitchTrigger,
             event_id: String,
         ) -> Result<(), String> {
             key_switch::create_key_switch_trigger(
                 self,
                 ks_session_id,
-                dept_identity,
                 ks_trigger,
                 event_id,
             )
@@ -1249,19 +1207,13 @@ mod blbc {
                 .create_auth_response(auth_session_id.clone(), sample_auth_response1.clone(), None)
                 .is_ok());
             // 验证
-            let dept_identity =DepartmentIdentityStored{
-                dept_type: "org".into(),
-                dept_level: 0,
-                dept_name: "dev".into(),
-                super_dept_name: "super_dev".into()
-            };
             let ks_trigger = KeySwitchTrigger{
                 resource_id,
                 auth_session_id,
                 key_switch_pk: "6666".into()
             };
             let ks_session_id :String = "123".into();
-            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(),dept_identity,ks_trigger,"888".into()).is_ok());
+            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(),ks_trigger,"888".into()).is_ok());
             assert_eq!(blbc.ks_trigger_map.get(ks_session_id).unwrap().validation_result,true);
         }
 
@@ -1287,19 +1239,13 @@ mod blbc {
                 .create_auth_response(auth_session_id.clone(), sample_auth_response1.clone(), None)
                 .is_ok());
             // 验证
-            let dept_identity =DepartmentIdentityStored{
-                dept_type: "org".into(),
-                dept_level: 0,
-                dept_name: "dev".into(),
-                super_dept_name: "super_dev".into()
-            };
             let ks_trigger = KeySwitchTrigger{
                 resource_id,
                 auth_session_id,
                 key_switch_pk: "6666".into()
             };
             let ks_session_id :String = "123".into();
-            assert_eq!(Err(error_code::CODE_FORBIDDEN.into()),blbc.create_key_switch_trigger(ks_session_id.clone(),dept_identity,ks_trigger,"888".into()));
+            assert_eq!(Err(error_code::CODE_FORBIDDEN.into()),blbc.create_key_switch_trigger(ks_session_id.clone(),ks_trigger,"888".into()));
         }
 
         #[ink::test]
@@ -1324,12 +1270,6 @@ mod blbc {
                 .create_auth_response(auth_session_id.clone(), sample_auth_response1.clone(), None)
                 .is_ok());
             // 验证
-            let dept_identity =DepartmentIdentityStored{
-                dept_type: "org".into(),
-                dept_level: 0,
-                dept_name: "dev".into(),
-                super_dept_name: "super_dev".into(),
-            };
             // 不存在的 auth_session_id
             let ks_trigger = KeySwitchTrigger{
                 resource_id,
@@ -1337,7 +1277,7 @@ mod blbc {
                 key_switch_pk: "6666".into()
             };
             let ks_session_id :String = "123".into();
-            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(),dept_identity,ks_trigger,"888".into()).is_err());
+            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(),ks_trigger,"888".into()).is_err());
         }
 
         #[ink::test]
@@ -1369,19 +1309,13 @@ mod blbc {
                 .create_auth_response(auth_session_id_a.clone(), sample_auth_response_a.clone(), None)
                 .is_ok());
             // 使用资源 b 的 resource_id 来验证，期待结果为失败
-            let dept_identity =DepartmentIdentityStored{
-                dept_type: "org".into(),
-                dept_level: 0,
-                dept_name: "dev".into(),
-                super_dept_name: "super_dev".into(),
-            };
             let ks_trigger = KeySwitchTrigger{
                 resource_id: resource_id_b,
                 auth_session_id: auth_session_id_a,
                 key_switch_pk: "6666".into()
             };
             let ks_session_id :String = "123".into();
-            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(),dept_identity,ks_trigger,"888".into()).is_err());
+            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(),ks_trigger,"888".into()).is_err());
         }
 
         #[ink::test]
@@ -1397,19 +1331,13 @@ mod blbc {
                 .create_encrypted_data(sample_encrypted_data, None)
                 .is_ok());
             // 验证
-            let dept_identity =DepartmentIdentityStored{
-                dept_type: "dev9".into(),
-                dept_level: 2,
-                dept_name: "wang".into(),
-                super_dept_name: "xi".into()
-            };
             let ks_trigger = KeySwitchTrigger{
                 resource_id,
                 auth_session_id: "".into(),
                 key_switch_pk: "6666".into()
             };
             let ks_session_id :String = "123".into();
-            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(),dept_identity,ks_trigger,"888".into()).is_ok());
+            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(),ks_trigger,"888".into()).is_ok());
             assert_eq!(blbc.ks_trigger_map.get(ks_session_id).unwrap().validation_result,true);
         }
 
@@ -1426,19 +1354,13 @@ mod blbc {
                 .create_encrypted_data(sample_encrypted_data, None)
                 .is_ok());
             // 验证
-            let dept_identity =DepartmentIdentityStored{
-                dept_type: "dev".into(),
-                dept_level: 3,
-                dept_name: "".into(),
-                super_dept_name: "xi".into()
-            };
             let ks_trigger = KeySwitchTrigger{
                 resource_id,
                 auth_session_id: "".into(),
                 key_switch_pk: "6666".into()
             };
             let ks_session_id :String = "123".into();
-            assert_eq!(Err(error_code::CODE_FORBIDDEN.into()),blbc.create_key_switch_trigger(ks_session_id.clone(),dept_identity,ks_trigger,"888".into()));
+            assert_eq!(Err(error_code::CODE_FORBIDDEN.into()),blbc.create_key_switch_trigger(ks_session_id.clone(),ks_trigger,"888".into()));
         }
 
         // #[ink::test]
