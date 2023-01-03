@@ -58,7 +58,7 @@ pub fn create_key_switch_trigger(
     }
 
     ink_env::debug_println!("收到的 auth_session_id: {}", &auth_session_id);
-    if !auth_session_id.is_empty() {
+    if (!auth_session_id.is_empty()) && auth_session_id.ne("null".into()){
         ink_env::debug_println!("正在获取批复...");
         // 获取 auth_request_stored，验证其中资源 ID 是否相同。若请求不存在，则另外报错。
         let auth_request_stored = match ctx.get_auth_request(auth_session_id.clone()) {

@@ -24,6 +24,7 @@ der = { version = "0.6", features = ["derive", "alloc", "flagset"], path = "./de
 flagset = { version = "0.4.3" }
 spki = { version = "0.6", path = "./spki" }
 serde_json = { version = "1.0", default-features = false, features=["alloc"] }
+rsa = { version = "0.7.2", default-features = false }
 
 
 [dev-dependencies]
@@ -40,6 +41,7 @@ crate-type = [
 [features]
 default = ["std"]
 std = [
+    "rsa/std",
     "serde_json/std",
     "ink_metadata/std",
     "ink_env/std",

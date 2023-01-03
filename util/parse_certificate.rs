@@ -13,6 +13,11 @@ use ink_env::Environment;
 use crate::blbc::Blbc;
 use ink_lang::codegen::Env;
 use crate::CertificateReadErr;
+// use rsa::pss::{BlindedSigningKey, VerifyingKey};
+// use rsa::signature::{Keypair,RandomizedSigner, SignatureEncoding, Verifier};
+// use sha2::{Digest, Sha256};
+// use rsa::{RsaPublicKey, pkcs1::DecodeRsaPublicKey};
+
 
 /// 调用后访问chain extension,获取runtime侧存储的证书
 pub(crate) fn get_dept_identity_by_chain_extension(ctx: &mut Blbc) -> Result<DepartmentIdentityStored, String> {
@@ -76,6 +81,38 @@ pub(crate) fn parse_x509(der_encoded_cert: [u8;2000], current_time: u64) -> Resu
             }
 
             // todo 验证证书签名是否正确
+            // PSS signatures
+//
+//
+//             let mut rng = rand::thread_rng();
+//
+//             let bits = 2048;
+//             let private_key = RsaPrivateKey::new(&mut rng, bits).expect("failed to generate a key");
+//             let signing_key = BlindedSigningKey::<Sha256>::new(private_key);
+//             let verifying_key = signing_key.verifying_key();
+//
+//             // Sign
+//             let data = b"hello world";
+//             let signature = signing_key.sign_with_rng(&mut rng, data);
+//             assert_ne!(signature.to_bytes().as_ref(), data);
+//
+//             // Verify
+//             verifying_key.verify(data, &signature).expect("failed to verify");
+//
+//
+//             let pem = "-----BEGIN PUBLIC KEY-----
+// MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvLD6Rgexw2dQaN7HaJ3Y
+// JPaxOF4rBGKM2HdVNIixvfAWv+xYECvzq32uCJ9RNyb7tRwBX6LhJXK9Y0ZWwY98
+// I91Ts/RujMjc+m8lSuxqdfE87xZzugo+0AGMRMudjNa8/5bJX8HKPSbuJoGAw4Ex
+// T59TtlYDkHFxaF1MSvbyJcw67XMHC5cNEIpDpxQ1+q8blAbK9ihKQFd7zycFazCV
+// mBSKPhjJ/TIEy9N2ekx01SXtm08Lpq6MuTIE7mfWzNtNXUS5rlzxwb+w6QOhRkAi
+// xkV1v3ZzWZdkB50ZLyJAv3d/SjKM1gZ46NCJYFqfskv+weXQ7ii8cRtJkYkAAMhG
+// 0QIDAQAB
+// -----END PUBLIC KEY-----";
+//
+//             let public_key = RsaPublicKey::from_pkcs1_pem(pem)?;
+//
+
             return Ok(dept_identity);
         }
         Err(_) => {
