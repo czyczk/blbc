@@ -100,7 +100,7 @@ pub fn create_key_switch_trigger(
                 return Err(msg);
             }
         };
-
+        ink_env::debug_println!("当前资源的访问策略{:?}",policy.clone());
         // 获取当前合约调用者对应的部门身份信息
         let dept_identity = get_dept_identity_by_chain_extension(ctx)?;
         ink_env::debug_println!("当前合约调用者的部门身份信息{:?}",dept_identity.clone());
@@ -116,6 +116,7 @@ pub fn create_key_switch_trigger(
                 return Err(error_code::CODE_FORBIDDEN.into());
             }
             Err(msg) => {
+                ink_env::debug_println!("执行 abac 访问控制过程中发生错误！");
                 return Err(msg);
             }
         }

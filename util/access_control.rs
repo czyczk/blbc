@@ -23,6 +23,7 @@ pub fn enforce_policy(policy: String, dept_identity: DepartmentIdentityStored) -
     match tokenize(policy, dept_identity) {
         Ok(t) => {
             tokens = t;
+            ink_env::debug_println!("访问策略的词法单元{:?}",tokens.clone());
             //panic!("{:?}",tokens);
             // 逻辑表达式属于中缀表达式，以下进行中缀表达式转后缀表达式，然后对后缀表达式进行计算
             let mut operator_stack: Vec<Token> = Vec::new();
@@ -58,6 +59,7 @@ pub fn enforce_policy(policy: String, dept_identity: DepartmentIdentityStored) -
                     loop {
                         match operator_stack.pop() {
                             None => {
+                                ink_env::debug_println!("policy字符串找不到左括号！");
                                 return Err(error_code::CODE_NOT_IMPLEMENTED.into());
                             }
                             Some(top) => {
@@ -90,12 +92,14 @@ pub fn enforce_policy(policy: String, dept_identity: DepartmentIdentityStored) -
                     let operand2;
                     match calculator_stack.pop() {
                         None => {
+                            ink_env::debug_println!("policy字符串缺少右操作数！");
                             return Err(error_code::CODE_NOT_IMPLEMENTED.into());
                         }
                         Some(t) => { operand2 = t; }
                     }
                     match calculator_stack.pop() {
                         None => {
+                            ink_env::debug_println!("policy字符串缺少左操作数！");
                             return Err(error_code::CODE_NOT_IMPLEMENTED.into());
                         }
                         Some(t) => { operand1 = t; }
@@ -134,6 +138,7 @@ pub fn enforce_policy(policy: String, dept_identity: DepartmentIdentityStored) -
                                 }
                             }
                             _ => {
+                                ink_env::debug_println!("DeptName、SuperDeptName、DeptType三个字段仅支持等号、不等号运算");
                                 return Err(error_code::CODE_NOT_IMPLEMENTED.into());
                             }
                         }
@@ -172,6 +177,7 @@ pub fn enforce_policy(policy: String, dept_identity: DepartmentIdentityStored) -
                                 }
                             }
                             _ => {
+                                ink_env::debug_println!("逻辑值之间仅支持&&、||运算");
                                 return Err(error_code::CODE_NOT_IMPLEMENTED.into());
                             }
                         }
@@ -180,11 +186,13 @@ pub fn enforce_policy(policy: String, dept_identity: DepartmentIdentityStored) -
                         // 当前端关键字为 DeptLevel 时，可用的操作符共6种
                         match operand1.value {
                             None => {
+                                ink_env::debug_println!("DeptLevel类型的操作数未赋值，可能是证书的扩展字段未设置DeptLevel");
                                 return Err(error_code::CODE_NOT_IMPLEMENTED.into());
                             }
                             Some(op1) => {
                                 match operand2.value {
                                     None => {
+                                        ink_env::debug_println!("DeptLevel类型的操作数未赋值，可能是证书的扩展字段未设置DeptLevel");
                                         return Err(error_code::CODE_NOT_IMPLEMENTED.into());
                                     }
                                     Some(op2) => {
@@ -287,17 +295,20 @@ pub fn enforce_policy(policy: String, dept_identity: DepartmentIdentityStored) -
                                                                 }
                                                             }
                                                             _ => {
+                                                                ink_env::debug_println!("DeptLevel字段仅支持>、<、>=、<=、==、!=操作");
                                                                 return Err(error_code::CODE_NOT_IMPLEMENTED.into());
                                                             }
                                                         }
                                                         calculator_stack.push(tmp);
                                                     }
                                                     Err(_) => {
+                                                        ink_env::debug_println!("DeptLevel的右操作数不能解析成数字");
                                                         return Err(error_code::CODE_NOT_IMPLEMENTED.into());
                                                     }
                                                 }
                                             }
                                             Err(_) => {
+                                                ink_env::debug_println!("DeptLevel的左操作数不能解析成数字");
                                                 return Err(error_code::CODE_NOT_IMPLEMENTED.into());
                                             }
                                         }
@@ -310,14 +321,18 @@ pub fn enforce_policy(policy: String, dept_identity: DepartmentIdentityStored) -
             }
             return match calculator_stack.pop() {
                 None => {
+                    ink_env::debug_println!("访问控制计算错误，不能计算出结果");
                     Err(error_code::CODE_NOT_IMPLEMENTED.into())
                 }
                 Some(result) => {
                     if result.category == Category::True {
+                        ink_env::debug_println!("访问控制计算成功，当前账户有权访问");
                         Ok(true)
                     } else if result.category == Category::False {
+                        ink_env::debug_println!("访问控制计算成功，当前账户无权访问");
                         Ok(false)
                     } else {
+                        ink_env::debug_println!("访问控制计算错误，最终的结果不是布尔值");
                         Err(error_code::CODE_NOT_IMPLEMENTED.into())
                     }
                 }
@@ -504,7 +519,7 @@ fn tokenize(policy: String, dept_identity: DepartmentIdentityStored) -> Result<V
     return Ok(tokens);
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// Token 结构体表示词法分析后产生的词法单元
 struct Token {
     // 词法单元的种别码
@@ -515,7 +530,7 @@ struct Token {
     priority: Option<i8>,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 /// Category 表示词法单元的种别码
 enum Category {
     // 左括号

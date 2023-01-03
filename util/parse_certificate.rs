@@ -27,7 +27,7 @@ pub(crate) fn get_dept_identity_by_chain_extension(ctx: &mut Blbc) -> Result<Dep
     let received_buffer: Result<[u8; 2000], CertificateReadErr> = ctx.env().extension().fetch_account_certificate(creator.clone());
     match received_buffer {
         Ok(cert) => {
-            ink_env::debug_println!("chain extension获取到的证书{:?}",cert.clone());
+            //ink_env::debug_println!("chain extension获取到的证书{:?}",cert.clone());
             let timestamp = ctx.env().block_timestamp() as u64;
             //let tt = 1001u64.checked_div(100).unwrap();
             ink_env::debug_println!("链上时间{:?}",timestamp.checked_div(1000).unwrap());
@@ -49,7 +49,7 @@ pub(crate) fn get_dept_identity_by_chain_extension(ctx: &mut Blbc) -> Result<Dep
 
 /// 校验并解析 x509 证书,如果出错返回错误信息，解析成功则返回部门身份信息
 pub(crate) fn parse_x509(der_encoded_cert: [u8;2000], current_time: u64) -> Result<DepartmentIdentityStored, String> {
-    ink_env::debug_println!("parse_x509 函数打印获取到的证书{:?}",der_encoded_cert);
+    //ink_env::debug_println!("parse_x509 函数打印获取到的证书{:?}",der_encoded_cert);
     // chain extension返回值的最后10位表示证书的长度
     let mut cert_len:u32 = 0;
     for i in 1990..2000 {
