@@ -28,7 +28,7 @@ pub fn create_key_switch_trigger(
     event_id: String,
 ) -> Result<(), String> {
     ink_env::debug_println!("---");
-    ink_env::debug_println!("create_key_switch_trigger");
+    ink_env::debug_println!("create_key_switch_trigger，密钥置换会话IDks_session_id={:?}",ks_session_id.clone());
 
     // 获取 auth_session_id
     ink_env::debug_println!("正在验证访问权...");
@@ -214,7 +214,7 @@ pub fn list_key_switch_results_by_id(
     ks_session_id: String,
 ) -> Result<Vec<KeySwitchResultStored>, String> {
     ink_env::debug_println!("---");
-    ink_env::debug_println!("list_key_switch_results_by_id");
+    ink_env::debug_println!("list_key_switch_results_by_id, ks_session_id={:?}",ks_session_id.clone());
 
     let mut search_result: Vec<KeySwitchResultStored> = Vec::new();
 
@@ -260,7 +260,7 @@ fn get_key_switch_result_with_accountid_string(
     creator_string: String,
 ) -> Result<KeySwitchResultStored, String> {
     ink_env::debug_println!("---");
-    ink_env::debug_println!("get_key_switch_result_with_accountid_string");
+    ink_env::debug_println!("get_key_switch_result_with_accountid_string, 密钥置换会话id={:?}, creator_string={:?}",ks_session_id.clone(),creator_string.clone());
 
     let key = get_key_for_key_switch_response(&ks_session_id, &creator_string);
 

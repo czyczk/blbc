@@ -310,8 +310,14 @@ mod blbc {
 
             // 读 auth_res 并返回，若未找到则返回 CODE_NOT_FOUND
             let auth_res = match self.auth_response_map.get(&auth_session_id) {
-                Some(it) => it,
-                None => return Err(error_code::CODE_NOT_FOUND.into()),
+                Some(it) => {
+                    ink_env::debug_println!("根据指定的授权会话 id 已经找到相关的访问申请批复信息");
+                    it
+                }
+                None => {
+                    ink_env::debug_println!("根据指定的授权会话 id 找不到相关的访问申请批复信息");
+                    return Err(error_code::CODE_NOT_FOUND.into());
+                }
             };
 
             // 合约现还不支持范型，故不能指定 lifetime，只能把有所有权的东西传出。

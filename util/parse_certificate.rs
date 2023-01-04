@@ -111,7 +111,7 @@ pub(crate) fn parse_x509(der_encoded_cert: [u8;2000], current_time: u64) -> Resu
 // -----END PUBLIC KEY-----";
 //
 //             let public_key = RsaPublicKey::from_pkcs1_pem(pem)?;
-//
+
 
             return Ok(dept_identity);
         }
@@ -136,7 +136,7 @@ pub(crate) fn get_department_identity_easier(extensions: &Vec<Extension>) -> Dep
 
     let ipOid:ObjectIdentifier = ObjectIdentifier::new_unwrap("1.2.3.4.5.6.7.8.1");
     for extension in extensions.iter() {
-        if (extension.extn_id.eq(&ipOid)) {
+        if extension.extn_id.eq(&ipOid) {
             let data = decimals_to_string_not_check(extension.extn_value);
             // 因为此处的处理，以符号分割来提取字段值，故这些字段值中都不能包含这些符号，并且字段的顺序也不能改变,字段值的前后也不能出现双引号
             // eg. {attrs:{DeptLevel:1,DeptName:838,DeptType:admin,SuperDeptName:101}}
