@@ -418,45 +418,6 @@ mod blbc {
         use sha2::{Digest, Sha256};
         use std::iter::FromIterator;
 
-        /// We test if the default constructor does its job.
-        // #[ink::test]
-        // fn default_extension_works() {
-        //     let rand_extension = Blbc::default();
-        //     assert_eq!(rand_extension.get(), [0; 32]);
-        // }
-
-        // #[ink::test]
-        // fn chain_extension_works() {
-        //     // given
-        //     struct MockedExtension;
-        //     impl ink_env::test::ChainExtension for MockedExtension {
-        //         /// The static function id of the chain extension.
-        //         fn func_id(&self) -> u32 {
-        //             1101
-        //         }
-        //
-        //         /// The chain extension is called with the given input.
-        //         ///
-        //         /// Returns an error code and may fill the `output` buffer with a
-        //         /// SCALE encoded result. The error code is taken from the
-        //         /// `ink_env::chain_extension::FromStatusCode` implementation for
-        //         /// `RandomReadErr`.
-        //         fn call(&mut self, _input: &[u8], output: &mut Vec<u8>) -> u32 {
-        //             let ret: [u8; 32] = [1; 32];
-        //             scale::Encode::encode_to(&ret, output);
-        //             0
-        //         }
-        //     }
-        //     ink_env::test::register_chain_extension(MockedExtension);
-        //     let mut rand_extension = Blbc::default();
-        //     assert_eq!(rand_extension.get(), [0; 32]);
-        //
-        //     // when
-        //     rand_extension.update([0_u8; 32]).expect("update must work");
-        //
-        //     // then
-        //     assert_eq!(rand_extension.get(), [1; 32]);
-        // }
 
         #[ink::test]
         fn default_works() {
@@ -1318,13 +1279,15 @@ mod blbc {
             assert!(blbc.create_key_switch_trigger(ks_session_id.clone(),ks_trigger,"888".into()).is_err());
         }
 
+        /// 修改此函数中的 policy 和 create_key_switch_trigger 函数里的 dept_identity 可以对访问控制进行单元测试
         #[ink::test]
         fn test_create_key_switch_trigger_with_valid_policy_process() {
             // 初始化
             let mut blbc = Blbc::default();
             // user1 创建加密数据
             let auth_session_id: String = "1".into();
-            let policy:String = "(DeptName!='wang'&&SuperDeptName=='xi'||DeptLevel>=2)".into();
+            //let policy:String = "(DeptName!=\"wang\"&&SuperDeptName=='xi'||DeptLevel>=2)".into();
+            let policy:String = "(DeptType == \"admin\")".into();
             let sample_encrypted_data = get_sample_encrypted_data_with_policy(policy);
             let resource_id = sample_encrypted_data.metadata.resource_id.clone();
             assert!(blbc

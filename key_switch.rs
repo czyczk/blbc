@@ -103,6 +103,14 @@ pub fn create_key_switch_trigger(
         ink_env::debug_println!("当前资源的访问策略{:?}",policy.clone());
         // 获取当前合约调用者对应的部门身份信息
         let dept_identity = get_dept_identity_by_chain_extension(ctx)?;
+
+        // 单元测试 abac 时使用
+        // let dept_identity= DepartmentIdentityStored{
+        //     dept_type: "admin".to_string(),
+        //     dept_level: 1,
+        //     dept_name: "838".to_string(),
+        //     super_dept_name: "101".to_string()
+        // };
         ink_env::debug_println!("当前合约调用者的部门身份信息{:?}",dept_identity.clone());
         // 执行 abac，并得到最终判断结果
         match enforce_policy(policy, dept_identity) {

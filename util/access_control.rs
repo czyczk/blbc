@@ -8,13 +8,14 @@ use crate::model::key_switch::DepartmentIdentityStored;
 
 
 /// 执行 abac 访问控制策略
-pub fn enforce_policy(policy: String, dept_identity: DepartmentIdentityStored) -> Result<bool, String> {
+pub fn enforce_policy(raw_policy: String, dept_identity: DepartmentIdentityStored) -> Result<bool, String> {
     // 检查输入的 policy 的内容
-    policy.replace(" ", "");
+    let policy = raw_policy.replace(" ", "");
     let policy_as_chars = policy.chars();
-    for char in policy_as_chars{
-        if !char.is_ascii_punctuation() && !char.is_ascii_digit() && !char.is_ascii_alphabetic(){
+    for char in policy_as_chars {
+        if !char.is_ascii_punctuation() && !char.is_ascii_digit() && !char.is_ascii_alphabetic() {
             // 如果 policy 既不是标点符号又不是数字也不是英文字母，则报错
+            ink_env::debug_println!("访问策略字符串出现非法字符{:?}",char);
             return Err(error_code::CODE_NOT_IMPLEMENTED.into());
         }
     }
@@ -211,7 +212,7 @@ pub fn enforce_policy(policy: String, dept_identity: DepartmentIdentityStored) -
                                                                         value: None,
                                                                         priority: None,
                                                                     };
-                                                                }else {
+                                                                } else {
                                                                     tmp = Token {
                                                                         category: Category::False,
                                                                         value: None,
@@ -226,7 +227,7 @@ pub fn enforce_policy(policy: String, dept_identity: DepartmentIdentityStored) -
                                                                         value: None,
                                                                         priority: None,
                                                                     };
-                                                                }else {
+                                                                } else {
                                                                     tmp = Token {
                                                                         category: Category::False,
                                                                         value: None,
@@ -241,7 +242,7 @@ pub fn enforce_policy(policy: String, dept_identity: DepartmentIdentityStored) -
                                                                         value: None,
                                                                         priority: None,
                                                                     };
-                                                                }else {
+                                                                } else {
                                                                     tmp = Token {
                                                                         category: Category::False,
                                                                         value: None,
@@ -256,7 +257,7 @@ pub fn enforce_policy(policy: String, dept_identity: DepartmentIdentityStored) -
                                                                         value: None,
                                                                         priority: None,
                                                                     };
-                                                                }else {
+                                                                } else {
                                                                     tmp = Token {
                                                                         category: Category::False,
                                                                         value: None,
@@ -271,7 +272,7 @@ pub fn enforce_policy(policy: String, dept_identity: DepartmentIdentityStored) -
                                                                         value: None,
                                                                         priority: None,
                                                                     };
-                                                                }else {
+                                                                } else {
                                                                     tmp = Token {
                                                                         category: Category::False,
                                                                         value: None,
@@ -286,7 +287,7 @@ pub fn enforce_policy(policy: String, dept_identity: DepartmentIdentityStored) -
                                                                         value: None,
                                                                         priority: None,
                                                                     };
-                                                                }else {
+                                                                } else {
                                                                     tmp = Token {
                                                                         category: Category::False,
                                                                         value: None,
@@ -336,18 +337,20 @@ pub fn enforce_policy(policy: String, dept_identity: DepartmentIdentityStored) -
                         Err(error_code::CODE_NOT_IMPLEMENTED.into())
                     }
                 }
-            }
+            };
         }
-        Err(msg) => { return Err(msg); }
+        Err(msg) => {
+            ink_env::debug_println!("对访问策略字符串 policy 进行词法分析的过程中发生错误");
+            return Err(msg);
+        }
     }
 }
-
 
 
 /// 对访问策略字符串 policy 进行词法分析，将其按词法单元分割
 fn tokenize(policy: String, dept_identity: DepartmentIdentityStored) -> Result<Vec<Token>, String> {
     let mut tokens: Vec<Token> = Vec::new();
-    let policy_as_chars:Vec<char> = policy.chars().collect();
+    let policy_as_chars: Vec<char> = policy.chars().collect();
     //panic!("{:?}",policy_as_chars);
     let length = policy.len();
     let mut i = 0;
@@ -481,7 +484,10 @@ fn tokenize(policy: String, dept_identity: DepartmentIdentityStored) -> Result<V
                 Some(substr) => {
                     match substr.find('\'') {
                         // 寻找右引号的位置
-                        None => { return Err(error_code::CODE_NOT_IMPLEMENTED.into()); }
+                        None => {
+                            ink_env::debug_println!("policy字符串找不到匹配的单引号");
+                            return Err(error_code::CODE_NOT_IMPLEMENTED.into());
+                        }
                         Some(pos) => {
                             let token = Token {
                                 category: Category::StrConstant,
@@ -493,7 +499,36 @@ fn tokenize(policy: String, dept_identity: DepartmentIdentityStored) -> Result<V
                         }
                     }
                 }
-                _ => {}
+                _ => {
+                    ink_env::debug_println!("policy字符串解析错误，可能是引号使用错误");
+                    return Err(error_code::CODE_NOT_IMPLEMENTED.into());
+                }
+            }
+        } else if policy_as_chars[i].eq(&'\"') {
+            // 字符串常量
+            match policy.get(i + 1..) {
+                Some(substr) => {
+                    match substr.find('\"') {
+                        // 寻找右引号的位置
+                        None => {
+                            ink_env::debug_println!("policy字符串找不到匹配的双引号");
+                            return Err(error_code::CODE_NOT_IMPLEMENTED.into());
+                        }
+                        Some(pos) => {
+                            let token = Token {
+                                category: Category::StrConstant,
+                                value: Some(policy.get(i + 1..i + pos + 1).unwrap().into()),
+                                priority: None,
+                            };
+                            tokens.push(token);
+                            i = i + pos + 1;
+                        }
+                    }
+                }
+                _ => {
+                    ink_env::debug_println!("policy字符串解析错误，可能是引号使用错误");
+                    return Err(error_code::CODE_NOT_IMPLEMENTED.into());
+                }
             }
         } else if policy_as_chars[i].is_ascii_digit() {
             // 数值常量
