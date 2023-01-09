@@ -1291,51 +1291,52 @@ mod blbc {
         }
 
         /// 修改此函数中的 policy 和 create_key_switch_trigger 函数里的 dept_identity 可以对访问控制进行单元测试
-        #[ink::test]
-        fn test_create_key_switch_trigger_with_valid_policy_process() {
-            // 初始化
-            let mut blbc = Blbc::default();
-            // user1 创建加密数据
-            let auth_session_id: String = "1".into();
-            //let policy:String = "(DeptName!=\"wang\"&&SuperDeptName=='xi'||DeptLevel>=2)".into();
-            let policy: String = "(DeptType == \"admin\")".into();
-            let sample_encrypted_data = get_sample_encrypted_data_with_policy(policy);
-            let resource_id = sample_encrypted_data.metadata.resource_id.clone();
-            assert!(blbc
-                .create_encrypted_data(sample_encrypted_data, None)
-                .is_ok());
-            // 验证
-            let ks_trigger = KeySwitchTrigger {
-                resource_id,
-                auth_session_id: "".into(),
-                key_switch_pk: "6666".into(),
-            };
-            let ks_session_id: String = "123".into();
-            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(), ks_trigger, "888".into()).is_ok());
-            assert_eq!(blbc.ks_trigger_map.get(ks_session_id).unwrap().validation_result, true);
-        }
-
-        #[ink::test]
-        fn test_create_key_switch_trigger_with_invalid_policy_process() {
-            // 初始化
-            let mut blbc = Blbc::default();
-            // user1 创建加密数据
-            let auth_session_id: String = "1".into();
-            let policy: String = "(DeptType=='dev'&&DeptLevel==2)".into();
-            let sample_encrypted_data = get_sample_encrypted_data_with_policy(policy);
-            let resource_id = sample_encrypted_data.metadata.resource_id.clone();
-            assert!(blbc
-                .create_encrypted_data(sample_encrypted_data, None)
-                .is_ok());
-            // 验证
-            let ks_trigger = KeySwitchTrigger {
-                resource_id,
-                auth_session_id: "".into(),
-                key_switch_pk: "6666".into(),
-            };
-            let ks_session_id: String = "123".into();
-            assert_eq!(Err(error_code::CODE_FORBIDDEN.into()), blbc.create_key_switch_trigger(ks_session_id.clone(), ks_trigger, "888".into()));
-        }
+        /// 单元测试时必须注释掉 chain extension 相关函数，chain extension 不在单元测试里测
+        // #[ink::test]
+        // fn test_create_key_switch_trigger_with_valid_policy_process() {
+        //     // 初始化
+        //     let mut blbc = Blbc::default();
+        //     // user1 创建加密数据
+        //     let auth_session_id: String = "1".into();
+        //     //let policy:String = "(DeptName!=\"wang\"&&SuperDeptName=='xi'||DeptLevel>=2)".into();
+        //     let policy: String = "(DeptType == \"admin\")".into();
+        //     let sample_encrypted_data = get_sample_encrypted_data_with_policy(policy);
+        //     let resource_id = sample_encrypted_data.metadata.resource_id.clone();
+        //     assert!(blbc
+        //         .create_encrypted_data(sample_encrypted_data, None)
+        //         .is_ok());
+        //     // 验证
+        //     let ks_trigger = KeySwitchTrigger {
+        //         resource_id,
+        //         auth_session_id: "".into(),
+        //         key_switch_pk: "6666".into(),
+        //     };
+        //     let ks_session_id: String = "123".into();
+        //     assert!(blbc.create_key_switch_trigger(ks_session_id.clone(), ks_trigger, "888".into()).is_ok());
+        //     assert_eq!(blbc.ks_trigger_map.get(ks_session_id).unwrap().validation_result, true);
+        // }
+        //
+        // #[ink::test]
+        // fn test_create_key_switch_trigger_with_invalid_policy_process() {
+        //     // 初始化
+        //     let mut blbc = Blbc::default();
+        //     // user1 创建加密数据
+        //     let auth_session_id: String = "1".into();
+        //     let policy: String = "(DeptType=='dev'&&DeptLevel==2)".into();
+        //     let sample_encrypted_data = get_sample_encrypted_data_with_policy(policy);
+        //     let resource_id = sample_encrypted_data.metadata.resource_id.clone();
+        //     assert!(blbc
+        //         .create_encrypted_data(sample_encrypted_data, None)
+        //         .is_ok());
+        //     // 验证
+        //     let ks_trigger = KeySwitchTrigger {
+        //         resource_id,
+        //         auth_session_id: "".into(),
+        //         key_switch_pk: "6666".into(),
+        //     };
+        //     let ks_session_id: String = "123".into();
+        //     assert_eq!(Err(error_code::CODE_FORBIDDEN.into()), blbc.create_key_switch_trigger(ks_session_id.clone(), ks_trigger, "888".into()));
+        // }
 
         // #[ink::test]
         // fn test_create_key_switch_result_with_normal_process() {

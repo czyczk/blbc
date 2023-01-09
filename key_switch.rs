@@ -38,12 +38,9 @@ pub fn create_key_switch_trigger(
     // 获取 resource_id，验证资源是否存在
     let resource_id = &ks_trigger.resource_id;
     ink_env::debug_println!("正在验证资源 '{}' 是否存在...", &resource_id);
-    let metadata = match ctx.res_metadata_map.get(resource_id) {
-        None => {
-            return Err(format!("资源 ID '{}' 不存在", resource_id));
-        }
-        Some(r) => r,
-    };
+    if ctx.res_metadata_map.get(resource_id).is_none(){
+        return Err(format!("资源 ID '{}' 不存在", resource_id));
+    }
 
     // 获取创建者与时间戳
     ink_env::debug_println!("正在获取调用者与时间戳...");
@@ -94,7 +91,7 @@ pub fn create_key_switch_trigger(
         ink_env::debug_println!("正在执行 ABAC...");
         // 如果 authSessionID 为空值，执行 abac
         // 根据资源 ID，得到资源的访问策略
-        let mut policy = match ctx.get_policy((*resource_id).clone()) {
+        let policy = match ctx.get_policy((*resource_id).clone()) {
             Ok(p) => p,
             Err(msg) => {
                 return Err(msg);

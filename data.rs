@@ -197,24 +197,6 @@ pub fn create_offchain_data(
         return Err(format!("资源 cid 不可为空"));
     }
 
-    // let der_encoded_cert =
-    //     include_bytes!("./util/alice.der");
-    // let result = x509_cert::Certificate::from_der(der_encoded_cert).unwrap();
-    // let validity = result.tbs_certificate.validity;
-    // let before_time = validity.not_before;
-    // let after_time = validity.not_after;
-    // let extensions =  result.tbs_certificate.extensions.unwrap();
-    // let test = after_time.to_date_time().unix_duration();
-    // let timestamp2 = ctx.env().block_timestamp();
-    // ink_env::debug_println!("afterTime: {:?} beforeTime: {:?} block时间{:?}", after_time.to_date_time().unix_duration().as_secs(), before_time.to_date_time().unix_duration().as_secs(),timestamp2);
-    //
-    // // 验证证书签名是否正确
-    //
-    // // 验证证书是否过期
-    //
-    // // 从证书解析出账户部门信息 dept——identity
-    // let dept_identity = parse_certificate::get_department_identity_easier(&extensions);
-
     // 计算存储的哈希与大小
     let size_stored = offchain_data.cid.len() as u64;
     let cid = offchain_data.cid.clone();

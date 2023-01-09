@@ -7,7 +7,6 @@ use der::{
 use spki::AlgorithmIdentifier;
 use ink_prelude::string::ToString;
 use ink_prelude::string::String;
-use serde_json::{Value};
 use ink_prelude::vec::Vec;
 use ink_env::Environment;
 use crate::blbc::Blbc;
