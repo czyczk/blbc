@@ -25,7 +25,7 @@ pub trait FetchCertificate {
     /// and the chain-side chain extension will get the `func_id` to do further operations.
     /// 此处定义一个 chain extension 函数，函数 id =1101, 与 runtime 侧对应
     #[ink(extension = 1101, returns_result = false)]
-    fn fetch_account_certificate( accound_id: ink_env::AccountId) -> [u8;2000];
+    fn fetch_account_certificate(accound_id: ink_env::AccountId) -> [u8; 2000];
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, scale::Encode, scale::Decode)]
@@ -288,12 +288,18 @@ mod blbc {
             auth_session_id: String,
         ) -> Result<AuthRequestStored, String> {
             ink_env::debug_println!("---");
-            ink_env::debug_println!("get_auth_request");
+            ink_env::debug_println!("get_auth_request: auth_session_id={:?}",auth_session_id.clone());
 
             // 读 auth_req 并返回，若未找到则返回 CODE_NOT_FOUND
             let auth_req = match self.auth_request_map.get(&auth_session_id) {
-                Some(it) => it,
-                None => return Err(error_code::CODE_NOT_FOUND.into()),
+                Some(it) => {
+                    ink_env::debug_println!("根据指定的授权会话 id 已经找到相关的访问申请请求 auth_request");
+                    it
+                }
+                None => {
+                    ink_env::debug_println!("根据指定的授权会话 id 找不到相关的访问申请请求 auth_request");
+                    return Err(error_code::CODE_NOT_FOUND.into());
+                }
             };
 
             // 合约现还不支持范型，故不能指定 lifetime，只能把有所有权的东西传出。
@@ -306,7 +312,7 @@ mod blbc {
             auth_session_id: String,
         ) -> Result<AuthResponseStored, String> {
             ink_env::debug_println!("---");
-            ink_env::debug_println!("get_auth_response");
+            ink_env::debug_println!("get_auth_response: auth_session_id={:?}",auth_session_id.clone());
 
             // 读 auth_res 并返回，若未找到则返回 CODE_NOT_FOUND
             let auth_res = match self.auth_response_map.get(&auth_session_id) {
@@ -934,7 +940,6 @@ mod blbc {
         //     // }, design_document_id: Some("101".into()) });
         //     // assert!(blbc.list_resource_ids_by_conditions(query_conditions2, 9).is_ok());
         // }
-
         #[ink::test]
         fn test_create_auth_request_with_encrypted_data() {
             // 初始化
@@ -1174,14 +1179,14 @@ mod blbc {
                 .create_auth_response(auth_session_id.clone(), sample_auth_response1.clone(), None)
                 .is_ok());
             // 验证
-            let ks_trigger = KeySwitchTrigger{
+            let ks_trigger = KeySwitchTrigger {
                 resource_id,
                 auth_session_id,
-                key_switch_pk: "6666".into()
+                key_switch_pk: "6666".into(),
             };
-            let ks_session_id :String = "123".into();
-            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(),ks_trigger,"888".into()).is_ok());
-            assert_eq!(blbc.ks_trigger_map.get(ks_session_id).unwrap().validation_result,true);
+            let ks_session_id: String = "123".into();
+            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(), ks_trigger, "888".into()).is_ok());
+            assert_eq!(blbc.ks_trigger_map.get(ks_session_id).unwrap().validation_result, true);
         }
 
         #[ink::test]
@@ -1206,13 +1211,13 @@ mod blbc {
                 .create_auth_response(auth_session_id.clone(), sample_auth_response1.clone(), None)
                 .is_ok());
             // 验证
-            let ks_trigger = KeySwitchTrigger{
+            let ks_trigger = KeySwitchTrigger {
                 resource_id,
                 auth_session_id,
-                key_switch_pk: "6666".into()
+                key_switch_pk: "6666".into(),
             };
-            let ks_session_id :String = "123".into();
-            assert_eq!(Err(error_code::CODE_FORBIDDEN.into()),blbc.create_key_switch_trigger(ks_session_id.clone(),ks_trigger,"888".into()));
+            let ks_session_id: String = "123".into();
+            assert_eq!(Err(error_code::CODE_FORBIDDEN.into()), blbc.create_key_switch_trigger(ks_session_id.clone(), ks_trigger, "888".into()));
         }
 
         #[ink::test]
@@ -1238,13 +1243,13 @@ mod blbc {
                 .is_ok());
             // 验证
             // 不存在的 auth_session_id
-            let ks_trigger = KeySwitchTrigger{
+            let ks_trigger = KeySwitchTrigger {
                 resource_id,
-                auth_session_id:"2".into(),
-                key_switch_pk: "6666".into()
+                auth_session_id: "2".into(),
+                key_switch_pk: "6666".into(),
             };
-            let ks_session_id :String = "123".into();
-            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(),ks_trigger,"888".into()).is_err());
+            let ks_session_id: String = "123".into();
+            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(), ks_trigger, "888".into()).is_err());
         }
 
         #[ink::test]
@@ -1276,13 +1281,13 @@ mod blbc {
                 .create_auth_response(auth_session_id_a.clone(), sample_auth_response_a.clone(), None)
                 .is_ok());
             // 使用资源 b 的 resource_id 来验证，期待结果为失败
-            let ks_trigger = KeySwitchTrigger{
+            let ks_trigger = KeySwitchTrigger {
                 resource_id: resource_id_b,
                 auth_session_id: auth_session_id_a,
-                key_switch_pk: "6666".into()
+                key_switch_pk: "6666".into(),
             };
-            let ks_session_id :String = "123".into();
-            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(),ks_trigger,"888".into()).is_err());
+            let ks_session_id: String = "123".into();
+            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(), ks_trigger, "888".into()).is_err());
         }
 
         /// 修改此函数中的 policy 和 create_key_switch_trigger 函数里的 dept_identity 可以对访问控制进行单元测试
@@ -1293,21 +1298,21 @@ mod blbc {
             // user1 创建加密数据
             let auth_session_id: String = "1".into();
             //let policy:String = "(DeptName!=\"wang\"&&SuperDeptName=='xi'||DeptLevel>=2)".into();
-            let policy:String = "(DeptType == \"admin\")".into();
+            let policy: String = "(DeptType == \"admin\")".into();
             let sample_encrypted_data = get_sample_encrypted_data_with_policy(policy);
             let resource_id = sample_encrypted_data.metadata.resource_id.clone();
             assert!(blbc
                 .create_encrypted_data(sample_encrypted_data, None)
                 .is_ok());
             // 验证
-            let ks_trigger = KeySwitchTrigger{
+            let ks_trigger = KeySwitchTrigger {
                 resource_id,
                 auth_session_id: "".into(),
-                key_switch_pk: "6666".into()
+                key_switch_pk: "6666".into(),
             };
-            let ks_session_id :String = "123".into();
-            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(),ks_trigger,"888".into()).is_ok());
-            assert_eq!(blbc.ks_trigger_map.get(ks_session_id).unwrap().validation_result,true);
+            let ks_session_id: String = "123".into();
+            assert!(blbc.create_key_switch_trigger(ks_session_id.clone(), ks_trigger, "888".into()).is_ok());
+            assert_eq!(blbc.ks_trigger_map.get(ks_session_id).unwrap().validation_result, true);
         }
 
         #[ink::test]
@@ -1316,20 +1321,20 @@ mod blbc {
             let mut blbc = Blbc::default();
             // user1 创建加密数据
             let auth_session_id: String = "1".into();
-            let policy:String = "(DeptType=='dev'&&DeptLevel==2)".into();
+            let policy: String = "(DeptType=='dev'&&DeptLevel==2)".into();
             let sample_encrypted_data = get_sample_encrypted_data_with_policy(policy);
             let resource_id = sample_encrypted_data.metadata.resource_id.clone();
             assert!(blbc
                 .create_encrypted_data(sample_encrypted_data, None)
                 .is_ok());
             // 验证
-            let ks_trigger = KeySwitchTrigger{
+            let ks_trigger = KeySwitchTrigger {
                 resource_id,
                 auth_session_id: "".into(),
-                key_switch_pk: "6666".into()
+                key_switch_pk: "6666".into(),
             };
-            let ks_session_id :String = "123".into();
-            assert_eq!(Err(error_code::CODE_FORBIDDEN.into()),blbc.create_key_switch_trigger(ks_session_id.clone(),ks_trigger,"888".into()));
+            let ks_session_id: String = "123".into();
+            assert_eq!(Err(error_code::CODE_FORBIDDEN.into()), blbc.create_key_switch_trigger(ks_session_id.clone(), ks_trigger, "888".into()));
         }
 
         // #[ink::test]
@@ -1484,7 +1489,7 @@ mod blbc {
         // 资源 ID: "103"
         // 名称: "Sample Encrypted Data 3"
         // 内容: base64(encrypt(data3))
-        fn get_sample_encrypted_data_with_policy(policy:String) -> EncryptedData {
+        fn get_sample_encrypted_data_with_policy(policy: String) -> EncryptedData {
             use ink_prelude::string::String;
 
             let mut hasher = Sha256::new();
