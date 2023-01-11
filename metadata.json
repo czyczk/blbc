@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0x1e569439b87034b3c41bfb1c63cc6261279ea81f3ae85008d7f1cc4f8499b3ce",
+    "hash": "0x0745d091e988659e3297c67df6a7eedb6597a5970fcc72e93f0be412a48bbba3",
     "language": "ink! 3.4.0",
     "compiler": "rustc 1.62.0-nightly"
   },
@@ -420,6 +420,30 @@
         {
           "args": [
             {
+              "label": "resource_id",
+              "type": {
+                "displayName": [
+                  "String"
+                ],
+                "type": 1
+              }
+            }
+          ],
+          "docs": [],
+          "label": "get_department_identity",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 46
+          },
+          "selector": "0x6c061fd7"
+        },
+        {
+          "args": [
+            {
               "label": "auth_session_id",
               "type": {
                 "displayName": [
@@ -434,7 +458,7 @@
                 "displayName": [
                   "AuthRequest"
                 ],
-                "type": 46
+                "type": 48
               }
             },
             {
@@ -476,7 +500,7 @@
                 "displayName": [
                   "AuthResponse"
                 ],
-                "type": 47
+                "type": 49
               }
             },
             {
@@ -521,7 +545,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 48
+            "type": 50
           },
           "selector": "0x90658209"
         },
@@ -545,7 +569,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 49
+            "type": 51
           },
           "selector": "0x08faf0c3"
         },
@@ -641,7 +665,7 @@
                 "displayName": [
                   "KeySwitchTrigger"
                 ],
-                "type": 50
+                "type": 52
               }
             },
             {
@@ -674,7 +698,7 @@
                 "displayName": [
                   "KeySwitchResult"
                 ],
-                "type": 51
+                "type": 53
               }
             }
           ],
@@ -698,7 +722,7 @@
                 "displayName": [
                   "KeySwitchResultQuery"
                 ],
-                "type": 52
+                "type": 54
               }
             }
           ],
@@ -710,7 +734,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 53
+            "type": 55
           },
           "selector": "0xfcff3b10"
         },
@@ -734,7 +758,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 54
+            "type": 56
           },
           "selector": "0x04fec934"
         }
@@ -2202,6 +2226,85 @@
         "id": 46,
         "type": {
           "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 47
+                    }
+                  ],
+                  "index": 0,
+                  "name": "Ok"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 1
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Err"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 47
+            },
+            {
+              "name": "E",
+              "type": 1
+            }
+          ],
+          "path": [
+            "Result"
+          ]
+        }
+      },
+      {
+        "id": 47,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "dept_type",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "dept_level",
+                  "type": 4,
+                  "typeName": "u8"
+                },
+                {
+                  "name": "dept_name",
+                  "type": 1,
+                  "typeName": "String"
+                },
+                {
+                  "name": "super_dept_name",
+                  "type": 1,
+                  "typeName": "String"
+                }
+              ]
+            }
+          },
+          "path": [
+            "blbc",
+            "model",
+            "key_switch",
+            "DepartmentIdentityStored"
+          ]
+        }
+      },
+      {
+        "id": 48,
+        "type": {
+          "def": {
             "composite": {
               "fields": [
                 {
@@ -2226,7 +2329,7 @@
         }
       },
       {
-        "id": 47,
+        "id": 49,
         "type": {
           "def": {
             "composite": {
@@ -2258,7 +2361,7 @@
         }
       },
       {
-        "id": 48,
+        "id": 50,
         "type": {
           "def": {
             "variant": {
@@ -2300,7 +2403,7 @@
         }
       },
       {
-        "id": 49,
+        "id": 51,
         "type": {
           "def": {
             "variant": {
@@ -2342,7 +2445,7 @@
         }
       },
       {
-        "id": 50,
+        "id": 52,
         "type": {
           "def": {
             "composite": {
@@ -2374,7 +2477,7 @@
         }
       },
       {
-        "id": 51,
+        "id": 53,
         "type": {
           "def": {
             "composite": {
@@ -2411,7 +2514,7 @@
         }
       },
       {
-        "id": 52,
+        "id": 54,
         "type": {
           "def": {
             "composite": {
@@ -2438,7 +2541,7 @@
         }
       },
       {
-        "id": 53,
+        "id": 55,
         "type": {
           "def": {
             "variant": {
@@ -2480,7 +2583,7 @@
         }
       },
       {
-        "id": 54,
+        "id": 56,
         "type": {
           "def": {
             "variant": {
@@ -2488,7 +2591,7 @@
                 {
                   "fields": [
                     {
-                      "type": 55
+                      "type": 57
                     }
                   ],
                   "index": 0,
@@ -2509,7 +2612,7 @@
           "params": [
             {
               "name": "T",
-              "type": 55
+              "type": 57
             },
             {
               "name": "E",
@@ -2522,7 +2625,7 @@
         }
       },
       {
-        "id": 55,
+        "id": 57,
         "type": {
           "def": {
             "sequence": {
