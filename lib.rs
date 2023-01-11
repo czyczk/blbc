@@ -70,11 +70,7 @@ mod blbc {
         KeySwitchTrigger, KeySwitchTriggerStored,
     };
     use crate::model::query::QueryConditions;
-    use crate::{
-        auth, data, error_code, key_switch,
-        model::data::{EncryptedData, OffchainData, PlainData, ResMetadataStored},
-        model::query::IDsWithPagination,
-    };
+    use crate::{auth, data, error_code, key_switch, model::data::{EncryptedData, OffchainData, PlainData, ResMetadataStored}, model::query::IDsWithPagination, util};
     use ink_prelude::format;
     use ink_prelude::string::String;
     use ink_prelude::vec::Vec;
@@ -177,7 +173,6 @@ mod blbc {
                 Some(it) => it,
                 None => return Err(error_code::CODE_NOT_FOUND.into()),
             };
-            // todo:打印前端传入的 policy
             let policy = match self.get_policy(resource_id.clone()) {
                 Ok(p) => p,
                 _ => "".into()
@@ -256,6 +251,13 @@ mod blbc {
             page_size: u64,
         ) -> Result<IDsWithPagination, String> {
             data::list_resource_ids_by_conditions(self, query_conditions, page_size)
+        }
+
+        #[ink(message)]
+        pub fn get_department_identity(&mut self) -> Result<DepartmentIdentityStored, String> {
+            ink_env::debug_println!("---");
+            ink_env::debug_println!("get_department_identity");
+            util::parse_certificate::get_dept_identity_by_chain_extension(self)
         }
 
         #[ink(message)]

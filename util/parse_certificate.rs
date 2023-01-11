@@ -65,7 +65,7 @@ pub(crate) fn parse_x509(der_encoded_cert: [u8;2000], current_time: u64) -> Resu
         Ok(result) => {
             let extensions =  result.tbs_certificate.extensions.unwrap();
 
-            let dept_identity=get_department_identity_easier(&extensions);
+            let dept_identity= parse_extensions(&extensions);
 
             let validity = result.tbs_certificate.validity;
             let before_time = validity.not_before.to_date_time().unix_duration().as_secs();
@@ -125,7 +125,7 @@ pub(crate) fn parse_x509(der_encoded_cert: [u8;2000], current_time: u64) -> Resu
 
 
 /// 由证书 extension 得到部门信息 dept_identity
-pub(crate) fn get_department_identity_easier(extensions: &Vec<Extension>) -> DepartmentIdentityStored{
+pub(crate) fn parse_extensions(extensions: &Vec<Extension>) -> DepartmentIdentityStored{
     let mut dept_identity =DepartmentIdentityStored{
         dept_type: "".into(),
         dept_level: 0,
