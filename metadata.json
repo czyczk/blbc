@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0x0745d091e988659e3297c67df6a7eedb6597a5970fcc72e93f0be412a48bbba3",
+    "hash": "0x90a580ce15610d2abb5ee7faa5df8d71b82bd48211eed9d92dada35c870f7374",
     "language": "ink! 3.4.0",
     "compiler": "rustc 1.62.0-nightly"
   },
@@ -418,17 +418,7 @@
           "selector": "0x8baad8d1"
         },
         {
-          "args": [
-            {
-              "label": "resource_id",
-              "type": {
-                "displayName": [
-                  "String"
-                ],
-                "type": 1
-              }
-            }
-          ],
+          "args": [],
           "docs": [],
           "label": "get_department_identity",
           "mutates": true,
