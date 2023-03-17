@@ -23,11 +23,11 @@ pub enum DocumentType {
 impl Into<String> for DocumentType {
     fn into(self) -> String {
         return match self {
-            DocumentType::DesignDocument => { "0".into() }
-            DocumentType::ProductionDocument => { "1".into() }
-            DocumentType::TransferDocument => { "2".into() }
-            DocumentType::UsageDocument => { "3".into() }
-            DocumentType::RepairDocument => { "4".into() }
+            DocumentType::DesignDocument => { "DesignDocument".into() }
+            DocumentType::ProductionDocument => { "ProductionDocument".into() }
+            DocumentType::TransferDocument => { "TransferDocument".into() }
+            DocumentType::UsageDocument => { "UsageDocument".into() }
+            DocumentType::RepairDocument => { "RepairDocument".into() }
         };
     }
 }
