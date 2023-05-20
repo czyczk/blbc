@@ -1,8 +1,8 @@
 {
   "source": {
-    "hash": "0x76dc07e1e730d4a4cd4a009a6aa4622300f1cde6a2ae8a76e9c3091b7490f5e4",
+    "hash": "0x2327b3ecae57f302ecdd50990dd65388b5c3c68a37f0241ec475e4b2d721f682",
     "language": "ink! 3.4.0",
-    "compiler": "rustc 1.62.0-nightly"
+    "compiler": "rustc 1.68.0-nightly"
   },
   "contract": {
     "name": "blbc",
