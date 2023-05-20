@@ -144,7 +144,8 @@ pub fn create_auth_response(
 
     return Ok(());
 }
-// 获取当前调用者尚未批复的请求
+
+/// 函数功能：返回该账户创建的所有资源的所有尚未批复的请求
 pub fn list_pending_auth_session_ids_by_resource_creator(
     ctx: &mut Blbc,
     page_size: u32,
@@ -174,16 +175,29 @@ pub fn list_pending_auth_session_ids_by_resource_creator(
         }
     }
     for auth_session_id in auth_session_ids {
+        // 从书签出现之后开始查找
         if bookmark_is_found {
-            // 当前调用者的未批复的申请
+            // 由 auth_session_id 获取申请信息
             let auth_request_stored = match ctx.get_auth_request(auth_session_id.clone()) {
                 Ok(b) => b,
                 Err(msg) => return Err(msg),
             };
+
+            // 由 AuthRequetStored 得到 资源 ID
+            let resource_id = &auth_request_stored.resource_id;
+
+            // 根据资源 id ，得到资源的元数据，以此检查资源是否存在
+            let metadata = match ctx.res_metadata_map.get(resource_id) {
+                None => {
+                    return Err(format!("资源 '{}' 不存在", resource_id));
+                }
+                Some(r) => r,
+            };
+
             match ctx.get_auth_response(auth_session_id.clone()) {
                 Ok(_) => {}
                 Err(_) => {
-                    if auth_request_stored.creator.eq(&creator) {
+                    if metadata.creator.eq(&creator) {
                         eligible_ids.push(auth_session_id.clone());
                         eligible_ids_num += 1;
                     }

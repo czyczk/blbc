@@ -80,7 +80,7 @@ pub fn create_plain_data(
     };
 
     // 存储数据
-    ink_env::debug_println!("正在存储数据");
+    ink_env::debug_println!("create_plain_data 正在存储数据{:?}",metadata_stored);
     ctx.res_map.insert(resource_id.clone(), &data_bytes);
     ctx.res_metadata_map
         .insert(resource_id.clone(), &metadata_stored);
@@ -155,7 +155,7 @@ pub fn create_encrypted_data(
     };
 
     // 存储数据
-    ink_env::debug_println!("正在存储数据");
+    ink_env::debug_println!("create_encrypted_data 正在存储数据{:?}",metadata_stored);
     ctx.res_map.insert(resource_id.clone(), &data_bytes);
     ctx.res_key_map.insert(resource_id.clone(), &key_decoded);
     ctx.res_policy_map
@@ -233,7 +233,7 @@ pub fn create_offchain_data(
     };
 
     // 存储数据
-    ink_env::debug_println!("正在存储数据");
+    ink_env::debug_println!("create_offchain_data 正在存储数据{:?}",metadata_stored);
     ctx.res_map
         .insert(resource_id.clone(), &offchain_data.cid.clone().into_bytes());
     ctx.res_key_map.insert(resource_id.clone(), &key_decoded);
@@ -504,6 +504,7 @@ fn meet_document_query_conditions(
         Some(document_type) => {
             let document_type_to_be_checked = match metadata.extensions.get("documentType") {
                 None => {
+                    // 上传加密的文件类型时，如果有些属性未勾选公开，则找不到相应属性
                     return Err("metadata 中找不到 documentType 属性".into());
                 }
                 Some(s) => s,
@@ -618,11 +619,13 @@ fn meet_document_query_conditions(
                 Some(s) => s,
             };
             let time_to_be_checked = metadata.timestamp;
+            // todo: 只精确到日期去比较，当前是时分秒
             if time.ne(&time_to_be_checked) {
                 return Ok(false);
             }
         }
         Some(false) => {
+            // todo:只精确到日期去比较
             //查找指定时间段: [after, before) 或 [after, 至今]、[起始时间, before)
             let time_to_be_checked = metadata.timestamp;
             if common_query_conditions.time_after_inclusive.is_none()

@@ -178,7 +178,7 @@ mod blbc {
                 _ => "".into()
             };
             ink_env::debug_println!("resource_id:{} policy ：{}",resource_id.clone(),policy);
-
+            ink_env::debug_println!("resource_id:{} metadata {:?}",resource_id.clone(),metadata);
             // 合约现还不支持范型，故不能指定 lifetime，只能把有所有权的东西传出。
             return Ok(metadata.clone());
         }
