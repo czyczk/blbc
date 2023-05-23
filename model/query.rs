@@ -29,9 +29,9 @@ pub struct CommonQueryConditions {
     // 时间是否为精确时间。`None` 表示条件不启用。`true` 为精确时间，`false` 为时间范围。该字段若不为 `None` 则相应的时间字段（精确时间字段或范围时间字段）不可为 `None`。
     pub time: Option<ScaleDateTimeLocal>,
     pub time_after_inclusive: Option<ScaleDateTimeLocal>,
-    // 时间条件启用时，`TimeAfterInclusive` 和 `TimeBeforeExclusive` 不可全为 `None`。
+    // 时间条件启用时，`TimeAfterInclusive` 和 `TimeBeforeExclusive` 必须都不为 None。
     pub time_before_exclusive: Option<ScaleDateTimeLocal>,
-    // 时间条件启用时，`TimeAfterInclusive` 和 `TimeBeforeExclusive` 不可全为 `None`。
+    // 时间条件启用时，`TimeAfterInclusive` 和 `TimeBeforeExclusive` 必须都不为 None。
     pub last_resource_id: Option<String>,    // 上一次查询最后的资源 ID
 }
 

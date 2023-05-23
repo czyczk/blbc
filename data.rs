@@ -1,4 +1,5 @@
 use core::iter::FromIterator;
+use chrono::Datelike;
 use der::Decode;
 use ink::codegen::{EmitEvent, Env};
 use ink_env::hash::Sha2x256;
@@ -494,6 +495,8 @@ pub fn list_resource_ids_by_conditions(
     return Ok(pagination_result);
 }
 
+
+/// 所有条件都满足才会返回 Ok(ture)
 fn meet_document_query_conditions(
     metadata: ResMetadataStored,
     document_query_conditions: DocumentQueryConditions,
@@ -505,7 +508,8 @@ fn meet_document_query_conditions(
             let document_type_to_be_checked = match metadata.extensions.get("documentType") {
                 None => {
                     // 上传加密的文件类型时，如果有些属性未勾选公开，则找不到相应属性
-                    return Err("metadata 中找不到 documentType 属性".into());
+                    // return Err("metadata 中找不到 documentType 属性".into());
+                    return Ok(false);
                 }
                 Some(s) => s,
             };
@@ -522,7 +526,8 @@ fn meet_document_query_conditions(
             let preceding_document_id_to_be_checked =
                 match metadata.extensions.get("precedingDocumentId") {
                     None => {
-                        return Err("metadata 中找不到 precedingDocumentId 属性".into());
+                        return Ok(false);
+                        //return Err("metadata 中找不到 precedingDocumentId 属性".into());
                     }
                     Some(s) => s,
                 };
@@ -536,7 +541,8 @@ fn meet_document_query_conditions(
         Some(head_document_id) => {
             let head_document_id_to_be_checked = match metadata.extensions.get("headDocumentId") {
                 None => {
-                    return Err("metadata 中找不到 headDocumentId 属性".into());
+                    return Ok(false);
+                    //return Err("metadata 中找不到 headDocumentId 属性".into());
                 }
                 Some(s) => s,
             };
@@ -550,7 +556,8 @@ fn meet_document_query_conditions(
         Some(entity_asset_id) => {
             let entity_asset_id_to_be_checked = match metadata.extensions.get("entityAssetId") {
                 None => {
-                    return Err("metadata 中找不到 entityAssetId 属性".into());
+                    return Ok(false);
+                    //return Err("metadata 中找不到 entityAssetId 属性".into());
                 }
                 Some(s) => s,
             };
@@ -581,7 +588,8 @@ fn meet_document_query_conditions(
             };
             let name_to_be_checked = match metadata.extensions.get("name") {
                 None => {
-                    return Err("metadata 中找不到 name 属性".into());
+                    return Ok(false);
+                    //return Err("metadata 中找不到 name 属性".into());
                 }
                 Some(s) => s,
             };
@@ -599,7 +607,8 @@ fn meet_document_query_conditions(
             };
             let name_to_be_checked = match metadata.extensions.get("name") {
                 None => {
-                    return Err("metadata 中找不到 name 属性".into());
+                    return Ok(false);
+                    //return Err("metadata 中找不到 name 属性".into());
                 }
                 Some(s) => s,
             };
@@ -619,49 +628,31 @@ fn meet_document_query_conditions(
                 Some(s) => s,
             };
             let time_to_be_checked = metadata.timestamp;
-            // todo: 只精确到日期去比较，当前是时分秒
-            if time.ne(&time_to_be_checked) {
+
+            ink_env::debug_println!("time.datetime.year {} time.datetime.month {} time.datetime.day {}",time.datetime.year(),time.datetime.month(),time.datetime.day());
+
+            // 只精确到日期去比较,年月日相同即可
+            if !(time.datetime.year() == time_to_be_checked.datetime.year() && time.datetime.month() == time_to_be_checked.datetime.month() && time.datetime.day() == time_to_be_checked.datetime.day()){
                 return Ok(false);
             }
         }
         Some(false) => {
-            // todo:只精确到日期去比较
-            //查找指定时间段: [after, before) 或 [after, 至今]、[起始时间, before)
+            //查找指定时间段: [after, before], 前闭后闭
             let time_to_be_checked = metadata.timestamp;
             if common_query_conditions.time_after_inclusive.is_none()
-                && common_query_conditions.time_before_exclusive.is_none()
+                || common_query_conditions.time_before_exclusive.is_none()
             {
                 return Err(
-                    "time_after_inclusive、time_before_exclusive 至少应有一个不为 None".into(),
+                    "time_after_inclusive、time_before_exclusive 都不可为 None".into(),
                 );
-            } else if common_query_conditions.time_after_inclusive.is_some()
-                && common_query_conditions.time_before_exclusive.is_some()
-            {
+            } else {
+                // after, before 的值都存在时,只精确到日期去比较
                 let time_after_inclusive = common_query_conditions.time_after_inclusive.unwrap();
                 let time_before_exclusive = common_query_conditions.time_before_exclusive.unwrap();
-                if time_to_be_checked.lt(&time_after_inclusive)
-                    || time_to_be_checked.ge(&time_before_exclusive)
-                {
+
+                if !(time_after_inclusive.datetime.num_days_from_ce() <= time_to_be_checked.datetime.num_days_from_ce() && time_before_exclusive.datetime.num_days_from_ce() >= time_to_be_checked.datetime.num_days_from_ce()){
                     return Ok(false);
                 }
-            } else {
-                // 二者有且仅有之一有值时
-                match common_query_conditions.time_after_inclusive {
-                    None => {}
-                    Some(t) => {
-                        if time_to_be_checked.lt(&t) {
-                            return Ok(false);
-                        }
-                    }
-                };
-                match common_query_conditions.time_before_exclusive {
-                    None => {}
-                    Some(t) => {
-                        if time_to_be_checked.ge(&t) {
-                            return Ok(false);
-                        }
-                    }
-                };
             }
         }
     };
@@ -680,7 +671,8 @@ fn meet_entity_asset_query_conditions(
             let design_document_id_to_be_checked = match metadata.extensions.get("designDocumentId")
             {
                 None => {
-                    return Err("metadata 中找不到 designDocumentId 属性".into());
+                    return Ok(false);
+                    //return Err("metadata 中找不到 designDocumentId 属性".into());
                 }
                 Some(s) => s,
             };
@@ -711,7 +703,8 @@ fn meet_entity_asset_query_conditions(
             };
             let name_to_be_checked = match metadata.extensions.get("name") {
                 None => {
-                    return Err("metadata 中找不到 name 属性".into());
+                    return Ok(false);
+                    //return Err("metadata 中找不到 name 属性".into());
                 }
                 Some(s) => s,
             };
@@ -729,7 +722,8 @@ fn meet_entity_asset_query_conditions(
             };
             let name_to_be_checked = match metadata.extensions.get("name") {
                 None => {
-                    return Err("metadata 中找不到 name 属性".into());
+                    return Ok(false);
+                    //return Err("metadata 中找不到 name 属性".into());
                 }
                 Some(s) => s,
             };
@@ -749,47 +743,31 @@ fn meet_entity_asset_query_conditions(
                 Some(s) => s,
             };
             let time_to_be_checked = metadata.timestamp;
-            if time.ne(&time_to_be_checked) {
+
+            ink_env::debug_println!("time.datetime.year {} time.datetime.month {} time.datetime.day {}",time.datetime.year(),time.datetime.month(),time.datetime.day());
+
+            // 只精确到日期去比较,年月日相同即可
+            if !(time.datetime.year() == time_to_be_checked.datetime.year() && time.datetime.month() == time_to_be_checked.datetime.month() && time.datetime.day() == time_to_be_checked.datetime.day()){
                 return Ok(false);
             }
         }
         Some(false) => {
-            //查找指定时间段: [after, before) 或 [after, 至今]、[起始时间, before)
+            //查找指定时间段: [after, before], 前闭后闭
             let time_to_be_checked = metadata.timestamp;
             if common_query_conditions.time_after_inclusive.is_none()
-                && common_query_conditions.time_before_exclusive.is_none()
+                || common_query_conditions.time_before_exclusive.is_none()
             {
                 return Err(
-                    "time_after_inclusive、time_before_exclusive 至少应有一个不为 None".into(),
+                    "time_after_inclusive、time_before_exclusive 都不可为 None".into(),
                 );
-            } else if common_query_conditions.time_after_inclusive.is_some()
-                && common_query_conditions.time_before_exclusive.is_some()
-            {
+            } else {
+                // after, before 的值都存在时,只精确到日期去比较
                 let time_after_inclusive = common_query_conditions.time_after_inclusive.unwrap();
                 let time_before_exclusive = common_query_conditions.time_before_exclusive.unwrap();
-                if time_to_be_checked.lt(&time_after_inclusive)
-                    || time_to_be_checked.ge(&time_before_exclusive)
-                {
+
+                if !(time_after_inclusive.datetime.num_days_from_ce() <= time_to_be_checked.datetime.num_days_from_ce() && time_before_exclusive.datetime.num_days_from_ce() >= time_to_be_checked.datetime.num_days_from_ce()){
                     return Ok(false);
                 }
-            } else {
-                // 二者有且仅有之一有值时
-                match common_query_conditions.time_after_inclusive {
-                    None => {}
-                    Some(t) => {
-                        if time_to_be_checked.lt(&t) {
-                            return Ok(false);
-                        }
-                    }
-                };
-                match common_query_conditions.time_before_exclusive {
-                    None => {}
-                    Some(t) => {
-                        if time_to_be_checked.ge(&t) {
-                            return Ok(false);
-                        }
-                    }
-                };
             }
         }
     };
